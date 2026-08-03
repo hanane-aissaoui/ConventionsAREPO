@@ -1,4 +1,4 @@
-package com.arepo.Serveur;
+package com.arepo.serveur;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

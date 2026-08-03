@@ -1,4 +1,4 @@
-package com.arepo.Serveur;
+package com.arepo.serveur;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

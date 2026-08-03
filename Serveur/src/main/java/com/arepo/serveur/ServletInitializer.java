@@ -1,4 +1,4 @@
-package com.arepo.Serveur;
+package com.arepo.serveur;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
