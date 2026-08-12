@@ -1,0 +1,25 @@
+.btn {
+  padding: 12px 0;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14.5px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  width: 100%;
+}
+
+.btn-primary {
+  background: #145A8D;
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  background: #8ab4d6;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #DC2626;
+  color: #fff;
+}
