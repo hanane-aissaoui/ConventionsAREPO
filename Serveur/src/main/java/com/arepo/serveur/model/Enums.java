@@ -13,6 +13,14 @@ public class Enums {
         ADMIN,
         AGENT
     }
+    public enum TypeAction {
+        TRAVAUX,
+        ETUDES,
+        EQUIPEMENT,
+        SUIVI_CONTROLE,
+        AUTRE
+    }
+
 
 
     private Enums() {}
