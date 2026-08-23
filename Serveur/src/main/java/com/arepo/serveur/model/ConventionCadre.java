@@ -9,10 +9,7 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 import java.util.UUID;
 
-/**
- * Convention Cadre : accord global entre un Partenaire et un Programme
- * (niveau strategique). Un Programme n'a qu'une seule ConventionCadre (1-1).
- */
+
 @Entity
 @Table(name = "convention_cadre")
 @Getter
@@ -43,6 +40,6 @@ public class ConventionCadre {
     private Partenaire partenaire;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_programme", referencedColumnName = "id_programme", nullable = false, unique = true)
+    @JoinColumn(name = "id_programme", referencedColumnName = "id_programme", nullable = false)
     private Programme programme;
 }

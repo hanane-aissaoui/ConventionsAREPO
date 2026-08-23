@@ -1,0 +1,123 @@
+.programme-card {
+  background: #fff;
+  border: 1px solid #E3E2E2;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.programme-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.programme-card__strip {
+  height: 6px;
+  background: #145A8D;
+}
+
+.programme-card__body {
+  padding: 20px;
+  position: relative;
+}
+
+/* Flottent au-dessus de la carte, ne réservent aucun espace dans le flux */
+.programme-card__actions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 2;
+}
+
+.programme-card:hover .programme-card__actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  outline: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: #F0F0F0;
+}
+
+.icon-btn:focus {
+  outline: none;
+}
+
+.icon-btn--danger {
+  color: #DC2626;
+}
+
+.programme-card__objet {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a2332;
+  line-height: 1.4;
+  margin: 0 0 14px;
+  /* évite que le titre passe sous les boutons quand il est long */
+  padding-right: 76px;
+}
+
+.programme-card__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.programme-card__montant {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0E630E;
+}
+
+.programme-card__dates {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.programme-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid #F3F4F6;
+}
+
+.programme-card__stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #145A8D;
+}
+
+.programme-card__link {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #145A8D;
+}

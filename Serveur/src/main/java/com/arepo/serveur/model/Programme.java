@@ -41,5 +41,5 @@ public class Programme {
     private List<Projet> projets = new ArrayList<>();
 
     @OneToMany(mappedBy = "programme", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConventionCadre> conventionCadre= new ArrayList<>();;
+    private List<ConventionCadre> conventionsCadre= new ArrayList<>();;
 }

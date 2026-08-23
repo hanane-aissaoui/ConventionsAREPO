@@ -8,11 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+<<<<<<< HEAD
 /**
  * Centralise la conversion des exceptions "metier" en reponses HTTP
  * propres, plutot que de laisser Spring renvoyer une stack trace brute
  * (500) a chaque erreur previsible.
  */
+=======
+
+>>>>>>> e44b437 (ajout sidebar,programme,programme detail)
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -28,9 +32,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
+<<<<<<< HEAD
     // Ex: essayer de supprimer un Programme encore lie a des Projets, ou
     // un Partenaire encore lie a des Conventions -> violation de cle
     // etrangere en base. Sans ce handler, Spring renverrait un 500 brut.
+=======
+
+>>>>>>> e44b437 (ajout sidebar,programme,programme detail)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDataIntegrity(DataIntegrityViolationException ex) {
         log.warn("Violation d'integrite des donnees : {}", ex.getMessage());
@@ -38,10 +46,14 @@ public class GlobalExceptionHandler {
                 .body("Impossible d'effectuer cette action : cet element est encore utilise ailleurs.");
     }
 
+<<<<<<< HEAD
     // Filet de securite final : toute erreur non prevue ci-dessus tombe
     // ici. On journalise la vraie erreur cote serveur (pour deboguer),
     // mais on renvoie un message generique au client, sans jamais exposer
     // de details internes (stack trace, noms de classes, requetes SQL...).
+=======
+
+>>>>>>> e44b437 (ajout sidebar,programme,programme detail)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleUnexpected(Exception ex) {
         log.error("Erreur interne non geree", ex);

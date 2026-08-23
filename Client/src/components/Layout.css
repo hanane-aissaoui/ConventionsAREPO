@@ -1,0 +1,22 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: #F5F6F8;
+}
+
+.layout__main {
+  flex: 1;
+  margin-left: 236px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: margin-left 0.25s ease;
+}
+
+.layout__main--full {
+  margin-left: 0;
+}
+
+.layout__content {
+  flex: 1;
+}

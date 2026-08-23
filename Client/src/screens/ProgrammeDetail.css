@@ -1,0 +1,267 @@
+.programme-detail {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.programme-detail__state {
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 14px;
+  padding: 60px 0;
+}
+
+.programme-detail__state--error {
+  color: #DC2626;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #6B7280;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* ---- Header card ---- */
+.detail-card {
+  background: #fff;
+  border: 1px solid #E3E2E2;
+  border-radius: 16px;
+  padding: 26px;
+  margin-bottom: 24px;
+}
+
+.detail-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.detail-card__badge {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #145A8D;
+  background: #E0F0FC;
+  padding: 4px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.detail-card__title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #1a2332;
+  max-width: 620px;
+  line-height: 1.4;
+}
+
+.detail-card__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-outline,
+.btn-primary-solid,
+.btn-danger-outline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-outline {
+  background: #fff;
+  border: 1px solid #145A8D;
+  color: #145A8D;
+}
+
+.btn-outline:hover {
+  background: #F0F7FC;
+}
+
+.btn-primary-solid {
+  background: #145A8D;
+  border: none;
+  color: #fff;
+}
+
+.btn-primary-solid:hover {
+  background: #0f4870;
+}
+
+.btn-danger-outline {
+  background: #fff;
+  border: 1px solid #DC2626;
+  color: #DC2626;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.btn-danger-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- Stats grid ---- */
+.detail-card__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 720px) {
+  .detail-card__stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-box {
+  background: #F9F9F9;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.stat-box__label {
+  font-size: 11.5px;
+  color: #9CA3AF;
+  margin: 8px 0 3px;
+}
+
+.stat-box__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2332;
+}
+
+/* ---- Sections ---- */
+.section-block {
+  margin-bottom: 28px;
+}
+
+.section-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.section-block__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #145A8D;
+}
+
+.table-container {
+  background: #fff;
+  border: 1px solid #E3E2E2;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+thead tr {
+  background: #F9F9F9;
+  border-bottom: 1px solid #E3E2E2;
+}
+
+th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6B7280;
+}
+
+td {
+  padding: 12px 16px;
+  color: #1a2332;
+}
+
+.empty-state {
+  text-align: center;
+  color: #9CA3AF;
+  padding: 32px 16px !important;
+}
+.section-block__header .btn-primary-solid.btn-sm {
+  padding: 7px 14px;
+  font-size: 12.5px;
+}
+
+.mono-cell {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: #145A8D;
+}
+
+.etat-badge {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #F0F0F0;
+  color: #6B7280;
+}
+
+.etat-badge--ok {
+  background: rgba(74, 222, 128, 0.15);
+  color: #16803c;
+}
+.row-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.row-actions .icon-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: #6B7280;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.row-actions .icon-btn:hover {
+  background: #F0F0F0;
+  color: #1a2332;
+}
+
+.row-actions .icon-btn--danger:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: #DC2626;
+}

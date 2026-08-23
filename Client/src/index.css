@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+=======
+:root {
+  color-scheme: light;
+}
+>>>>>>> e44b437 (ajout sidebar,programme,programme detail)
 
 * {
   box-sizing: border-box;
@@ -6,5 +12,21 @@
 
 body {
   margin: 0;
+<<<<<<< HEAD
   font-family: 'Inter', sans-serif;
+=======
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  color: #1a2332;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+>>>>>>> e44b437 (ajout sidebar,programme,programme detail)
 }

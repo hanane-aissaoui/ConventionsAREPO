@@ -1,0 +1,91 @@
+.topbar {
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #E3E2E2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar__menu-btn {
+  display: none;
+  border: none;
+  background: none;
+  color: #4B5563;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.breadcrumb__item {
+  color: #6B7280;
+  text-decoration: none;
+}
+
+.breadcrumb__item:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb__item--current {
+  color: #145A8D;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: default;
+}
+
+.breadcrumb__sep {
+  margin: 0 8px;
+  color: #C4C9D0;
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Correction : Suppression du positionnement absolu pour afficher le bouton proprement en ligne */
+.topbar__dropdown {
+  display: flex;
+  align-items: center;
+}
+
+/* Style du bouton de déconnexion direct */
+.topbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px;
+  border: 1px solid #F3F4F6; /* Ajout d'une légère bordure discrète */
+  border-radius: 6px;       /* Coins arrondis pour un effet bouton propre */
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.topbar__dropdown-item--danger {
+  color: #DC2626;
+  border-color: rgba(220, 38, 38, 0.15);
+}
+
+.topbar__dropdown-item--danger:hover {
+  background: rgba(220, 38, 38, 0.06);
+  border-color: rgba(220, 38, 38, 0.3);
+}
