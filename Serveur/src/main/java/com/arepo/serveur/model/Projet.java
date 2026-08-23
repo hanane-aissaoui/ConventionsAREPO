@@ -5,8 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +40,10 @@ public class Projet {
 
     @Column(name = "statut", length = 50)
     private String statut;
+
+    @CreationTimestamp
+    @Column(name = "date_creation", updatable = false)
+    private LocalDateTime dateCreation;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_programme", referencedColumnName = "id_programme", nullable = false)
