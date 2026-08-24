@@ -41,6 +41,8 @@ public class ProjetDto {
         dto.statut = p.getStatut();
         dto.nomProgramme = p.getProgramme().getObjet();
         dto.nomCommune = p.getCommune().getNom();
+        dto.idProgramme = p.getProgramme().getIdProgramme();
+        dto.idCommune = p.getCommune().getIdCommune();
         dto.nbrPartenaire=p.getConventionsSpecifiques().size();
         dto.nbrSociete=p.getMarches().size();
         return dto;

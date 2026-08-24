@@ -1,5 +1,7 @@
 .fiche-container {
   padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
   font-family: 'Inter', sans-serif;
 }
 
@@ -10,9 +12,9 @@
   background: none;
   border: none;
   color: #6B7280;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   padding: 0;
 }
 
@@ -23,9 +25,9 @@
 .fiche-header-card {
   background: #fff;
   border-radius: 14px;
-  padding: 24px;
+  padding: 26px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .fiche-badge-orange {
@@ -43,7 +45,54 @@
   font-size: 22px;
   font-weight: 700;
   color: #1a2332;
-  margin: 0 0 20px;
+  margin: 0;
+}
+
+.fiche-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.fiche-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.fiche-header-actions .btn-outline,
+.fiche-header-actions .btn-danger-outline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fiche-header-actions .btn-outline {
+  background: #fff;
+  border: 1px solid #145A8D;
+  color: #145A8D;
+}
+
+.fiche-header-actions .btn-outline:hover {
+  background: #F0F7FC;
+}
+
+.fiche-header-actions .btn-danger-outline {
+  background: #fff;
+  border: 1px solid #DC2626;
+  color: #DC2626;
+}
+
+.fiche-header-actions .btn-danger-outline:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.06);
 }
 
 .fiche-info-grid {

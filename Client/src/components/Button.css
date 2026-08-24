@@ -1,8 +1,12 @@
 .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px 0;
   border-radius: 10px;
   font-weight: 700;
   font-size: 14.5px;
+  text-align: center;
   border: none;
   cursor: pointer;
   letter-spacing: 0.02em;
