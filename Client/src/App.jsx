@@ -4,6 +4,8 @@ import { Provider } from "react-redux";
 import { store } from "./store/store";
 import ProgrammesPage from "./screens/ProgrammesScreen";
 import ProgrammeDetail from "./screens/ProgrammeDetail";
+import ProjetsScreen from "./screens/ProjetsScreen";
+import FicheProjet from "./screens/FicheProjet";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
@@ -37,6 +39,26 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <ProgrammeDetail />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projets"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ProjetsScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projets/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <FicheProjet />
                 </Layout>
               </ProtectedRoute>
             }

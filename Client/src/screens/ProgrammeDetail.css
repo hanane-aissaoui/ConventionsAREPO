@@ -191,6 +191,16 @@ thead tr {
   border-bottom: 1px solid #E3E2E2;
 }
 
+/* Le tableau des Projets reprend l'en-tête bleu du module Projets */
+.table-container--projets thead tr {
+  background: #145A8D;
+  border-bottom: none;
+}
+
+.table-container--projets th {
+  color: #fff;
+}
+
 th {
   text-align: left;
   padding: 10px 16px;

@@ -1,5 +1,6 @@
 import axiosClient from "./axiosClient"
-import type { PageResponse, Programme, ProgrammeCreateRequest } from "../types/programme"
+import type { Programme,ProgrammeCreateRequest } from "../types/programme"
+import type { PageResponse} from "../types/pageResponce"
 
 export async function getProgrammes({
   page = 0,
@@ -26,11 +27,10 @@ export async function createProgramme(payload: ProgrammeCreateRequest): Promise<
   return response.data
 }
 
+export async function deleteProgramme(id: string): Promise<void> {
+  await axiosClient.delete(`/programmes/${id}`)
+}
 export async function updateProgramme(id: string, payload: ProgrammeCreateRequest): Promise<Programme> {
   const response = await axiosClient.put<Programme>(`/programmes/${id}`, payload)
   return response.data
-}
-
-export async function deleteProgramme(id: string): Promise<void> {
-  await axiosClient.delete(`/programmes/${id}`)
 }

@@ -1,0 +1,304 @@
+.projets-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+}
+
+.projets-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.projets-page__header h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a2332;
+  margin: 0 0 4px;
+}
+
+.projets-page__header p {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #145A8D;
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: #0f4870;
+}
+
+/* ─── Barre de recherche : identique à celle des Programmes ─────────── */
+.projets-page__filters {
+  background: #fff;
+  border: 1px solid #E3E2E2;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.search-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.search-group input {
+  flex: 1;
+  border: 1px solid #E3E2E2;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: #F9F9F9;
+  font-size: 13px;
+  color: #1a2332;
+  outline: none;
+}
+
+.search-group input:focus {
+  border-color: #145A8D;
+}
+
+.search-group input::placeholder {
+  color: #9CA3AF;
+}
+
+.btn-search {
+  background: #145A8D;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.btn-search:hover {
+  background: #0f4870;
+}
+
+.projets-page__state {
+  text-align: center;
+  font-size: 13px;
+  color: #9CA3AF;
+  padding: 12px 0;
+}
+
+.projets-page__state--error {
+  color: #DC2626;
+}
+
+/* ─── Tableau ─────────────────────────────────────────────────────────── */
+.projets-table-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.projets-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.projets-table thead {
+  background: #145A8D;
+}
+
+/* Le sélecteur global "thead tr" (ProgrammeDetail.css) peint la ligne en gris
+   par-dessus le fond du <thead> : on reprend la main ici explicitement. */
+.projets-table thead tr {
+  background: #145A8D;
+  border-bottom: none;
+}
+
+.projets-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.projets-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #1a2332;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.projets-table tbody tr:hover {
+  background: #F9F9F9;
+}
+
+.projets-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #E0F0FC;
+  color: #145A8D;
+}
+
+.projets-empty {
+  padding: 30px;
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 14px;
+}
+
+.projets-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.projets-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  color: #6B7280;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.projets-actions button:hover {
+  background: #F3F4F6;
+}
+
+.projets-delete-link {
+  color: #DC2626 !important;
+}
+
+.projets-delete-link:hover {
+  background: #FEF2F2 !important;
+}
+
+.projets-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.projets-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  padding: 24px;
+}
+
+.projets-modal h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #145A8D;
+  margin: 0 0 18px;
+}
+
+.projets-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.projets-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  gap: 6px;
+}
+
+.projets-form input {
+  padding: 10px 14px;
+  border: 1px solid #E3E2E2;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 400;
+  outline: none;
+}
+
+.projets-form input:focus {
+  border-color: #145A8D;
+}
+
+.projets-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #E3E2E2;
+}
+
+.projets-modal-actions button:first-child {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #E3E2E2;
+  border-radius: 8px;
+  background: #fff;
+  color: #6B7280;
+  cursor: pointer;
+}
+
+.projets-modal-actions button:first-child:hover {
+  background: #F9F9F9;
+}
+
+.projets-modal-actions button[type="submit"] {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background: #145A8D;
+  color: #fff;
+  cursor: pointer;
+}
+
+.projets-modal-actions button[type="submit"]:hover {
+  opacity: 0.9;
+}
+
+.projets-row-clickable {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.projets-row-clickable:hover {
+  background: #F9F9F9;
+}

@@ -1,6 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8081"
-
-
+import axios from "axios"
+import axiosClient from "./api/axiosClient"
 
 export class ApiError extends Error {
   status: number
@@ -8,20 +7,22 @@ export class ApiError extends Error {
     super(message)
     this.status = status
   }
-  
 }
 
 export async function login(email: string, motDePasse: string) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, motDePasse }),
-  })
-
-  if (!response.ok) {
-    const message = await response.text()
-    throw new ApiError(response.status, message || "Échec de la connexion")
+  try {
+    const response = await axiosClient.post("/auth/login", { email, motDePasse })
+    return response.data
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const status = err.response?.status ?? 0
+      const data = err.response?.data
+      const message =
+        (typeof data === "string" && data) ||
+        (data && typeof data === "object" && "message" in data && String((data as { message: unknown }).message)) ||
+        "Échec de la connexion"
+      throw new ApiError(status, message)
+    }
+    throw err
   }
-
-  return response.json()
 }

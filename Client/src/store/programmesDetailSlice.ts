@@ -47,6 +47,7 @@ export const addConventionCadre = createAsyncThunk(
   }
 )
 
+// Modifie une convention existante, puis recharge la liste
 export const editConventionCadre = createAsyncThunk(
   "programmeDetail/editConventionCadre",
   async (
@@ -58,6 +59,7 @@ export const editConventionCadre = createAsyncThunk(
   }
 )
 
+// Supprime une convention, puis recharge la liste
 export const removeConventionCadre = createAsyncThunk(
   "programmeDetail/removeConventionCadre",
   async ({ id, idProgramme }: { id: string; idProgramme: string }, { dispatch }) => {
@@ -196,6 +198,7 @@ const programmeDetailSlice = createSlice({
         state.addConventionStatus = "failed"
         state.addConventionError = action.error.message ?? "Erreur lors de la création de la convention"
       })
+      // Édition convention
       .addCase(editConventionCadre.pending, (state) => {
         state.editConventionStatus = "loading"
         state.editConventionError = null
@@ -207,6 +210,7 @@ const programmeDetailSlice = createSlice({
         state.editConventionStatus = "failed"
         state.editConventionError = action.error.message ?? "Erreur lors de la modification de la convention"
       })
+      // Suppression convention
       .addCase(removeConventionCadre.pending, (state) => {
         state.deleteConventionStatus = "loading"
       })

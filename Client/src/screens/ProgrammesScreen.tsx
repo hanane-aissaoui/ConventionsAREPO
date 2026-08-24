@@ -24,17 +24,20 @@ export default function ProgrammesScreen() {
 
   const [inputValue, setInputValue] = useState(searchTerm)
 
+  // Modal création/édition
   const [modalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<"create" | "edit">("create")
   const [editingProgramme, setEditingProgramme] = useState<Programme | null>(null)
 
+  // Dialogue de confirmation de suppression
   const [deleteTarget, setDeleteTarget] = useState<Programme | null>(null)
 
   useEffect(() => {
     dispatch(fetchProgrammes({ page: 0, objet: searchTerm }))
-   
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Ferme le modal quand la création réussit
   useEffect(() => {
     if (createStatus === "succeeded") {
       setModalOpen(false)
@@ -42,6 +45,7 @@ export default function ProgrammesScreen() {
     }
   }, [createStatus, dispatch])
 
+  // Ferme le modal quand l'édition réussit
   useEffect(() => {
     if (editStatus === "succeeded") {
       setModalOpen(false)
@@ -50,6 +54,7 @@ export default function ProgrammesScreen() {
     }
   }, [editStatus, dispatch])
 
+  // Ferme le dialogue de confirmation quand la suppression réussit
   useEffect(() => {
     if (deleteStatus === "succeeded") {
       setDeleteTarget(null)
@@ -107,6 +112,7 @@ export default function ProgrammesScreen() {
     }
   }
 
+  // Convertit un Programme (venant du backend) en valeurs de formulaire (strings)
   const toFormValues = (programme: Programme): ProgrammeFormValues => ({
     objet: programme.objet,
     dateDebut: programme.dateDebut ?? "",

@@ -1,3 +1,4 @@
+// Décode la partie payload d'un JWT (sans vérifier la signature - juste pour lire l'expiration côté client)
 function decodeJwtPayload(token: string): { exp?: number } | null {
   try {
     const payloadBase64 = token.split(".")[1]
@@ -15,6 +16,7 @@ export function isTokenValid(): boolean {
   const payload = decodeJwtPayload(token)
   if (!payload?.exp) return false
 
+  // exp est en secondes Unix, Date.now() est en millisecondes
   const isExpired = Date.now() >= payload.exp * 1000
   return !isExpired
 }

@@ -3,6 +3,7 @@ import { Menu, LogOut } from "lucide-react"
 import { logout } from "../utils/auth"
 import "./Topbar.css"
 
+// Traduction des segments d'URL vers un libellé lisible dans le fil d'Ariane
 const LABELS: Record<string, string> = {
   dashboard: "Tableau de bord",
   programmes: "Programmes",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Pencil, Trash2, Calendar, DollarSign, Users, FolderOpen, Plus } from "lucide-react"
+import { ArrowLeft, Pencil, Download, Trash2, Calendar, DollarSign, Users, FolderOpen, Plus } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
 import {
   fetchProgrammeById,
@@ -35,15 +35,6 @@ function formatDate(dateStr: string | null): string {
     month: "short",
     year: "numeric",
   })
-}
-
-function EtatBadge({ etat }: { etat: string }) {
-  const isSignee = etat === "Signée"
-  return (
-    <span className={`etat-badge ${isSignee ? "etat-badge--ok" : ""}`}>
-      {etat}
-    </span>
-  )
 }
 
 export default function ProgrammeDetail() {
@@ -185,6 +176,7 @@ export default function ProgrammeDetail() {
     }
   }
 
+  // Convertit une ConventionCadre en valeurs de formulaire (strings) pour pré-remplir l'édition
   const toConventionFormValues = (c: ConventionCadre): ConventionFormValues => ({
     idPartenaire: c.idPartenaire,
     etatConvention: c.etatConvention,
@@ -227,6 +219,9 @@ export default function ProgrammeDetail() {
             <button className="btn-outline" onClick={() => setEditModalOpen(true)}>
               <Pencil size={14} />
             </button>
+           {/* <button className="btn-primary-solid">
+              <Download size={14} /> Exporter
+            </button>*/}
             <button
               className="btn-danger-outline"
               onClick={() => setDeleteDialogOpen(true)}
@@ -277,14 +272,13 @@ export default function ProgrammeDetail() {
                 <th>Contribution</th>
                 <th>Débloqué</th>
                 <th>Date de Participation</th>
-                <th>État</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {conventionsCadre.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="empty-state">Aucune convention.</td>
+                  <td colSpan={5} className="empty-state">Aucune convention.</td>
                 </tr>
               )}
               {conventionsCadre.map((c) => {
@@ -295,7 +289,6 @@ export default function ProgrammeDetail() {
                     <td>{formatMontant(c.montantContribution)}</td>
                     <td>{formatMontant(c.montantDebloque)}</td>
                     <td>{formatDate(c.dateParticipation)}</td>
-                    <td><EtatBadge etat={c.etatConvention} /></td>
                     <td className="row-actions">
                       <button
                         className="icon-btn"
@@ -325,10 +318,11 @@ export default function ProgrammeDetail() {
         <div className="section-block__header">
           <p className="section-block__title">Projets ({programme.nbrProjet})</p>
         </div>
-        <div className="table-container">
+        <div className="table-container table-container--projets">
           <table>
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Nom du Projet</th>
                 <th>Période</th>
                 <th>Budget</th>
@@ -337,7 +331,7 @@ export default function ProgrammeDetail() {
             </thead>
             <tbody>
               <tr>
-                <td colSpan={4} className="empty-state">
+                <td colSpan={5} className="empty-state">
                   <FolderOpen size={16} style={{ marginBottom: 6 }} />
                   <br />
                   Aucun projet associé à ce programme.

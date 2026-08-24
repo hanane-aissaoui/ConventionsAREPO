@@ -1,5 +1,4 @@
 import { useState } from "react"
-
 import { useNavigate } from "react-router-dom"
 import logoSrc from "../assets/logo.png"
 import bgSrc from "../assets/background.jpg"
@@ -10,7 +9,6 @@ import ErrorBanner from "../components/ErrorBanner"
 import "./LoginScreen.css"
 
 export default function LoginScreen() {
-
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -25,11 +23,7 @@ export default function LoginScreen() {
     try {
       const result = await login(email, password)
       localStorage.setItem("token", result.token)
-      console.log("Connecté :", result)
-    
-
       navigate("/programmes")
- 
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message)

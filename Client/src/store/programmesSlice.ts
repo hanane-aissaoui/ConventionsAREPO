@@ -37,6 +37,7 @@ export const removeProgramme = createAsyncThunk(
   async (id: string, { dispatch, getState }) => {
     await deleteProgramme(id)
     const state = getState() as { programmes: ProgrammesState }
+    // Si on supprime le dernier élément d'une page > 0, on recule d'une page
     const isLastItemOnPage = state.programmes.items.length === 1 && state.programmes.page > 0
     const targetPage = isLastItemOnPage ? state.programmes.page - 1 : state.programmes.page
     await dispatch(fetchProgrammes({ page: targetPage, objet: state.programmes.searchTerm }))
@@ -112,6 +113,7 @@ const programmesSlice = createSlice({
         state.status = "failed"
         state.error = action.error.message ?? "Erreur inconnue"
       })
+      // Création
       .addCase(addProgramme.pending, (state) => {
         state.createStatus = "loading"
         state.createError = null
@@ -123,6 +125,7 @@ const programmesSlice = createSlice({
         state.createStatus = "failed"
         state.createError = action.error.message ?? "Erreur lors de la création"
       })
+      // Édition
       .addCase(editProgramme.pending, (state) => {
         state.editStatus = "loading"
         state.editError = null
@@ -134,6 +137,7 @@ const programmesSlice = createSlice({
         state.editStatus = "failed"
         state.editError = action.error.message ?? "Erreur lors de la modification"
       })
+      // Suppression
       .addCase(removeProgramme.pending, (state) => {
         state.deleteStatus = "loading"
         state.deleteError = null
