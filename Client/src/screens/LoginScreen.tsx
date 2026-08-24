@@ -1,8 +1,6 @@
 import { useState } from "react"
-<<<<<<< HEAD
-=======
+
 import { useNavigate } from "react-router-dom"
->>>>>>> e44b437 (ajout sidebar,programme,programme detail)
 import logoSrc from "../assets/logo.png"
 import bgSrc from "../assets/background.jpg"
 import { login, ApiError } from "../api"
@@ -12,10 +10,8 @@ import ErrorBanner from "../components/ErrorBanner"
 import "./LoginScreen.css"
 
 export default function LoginScreen() {
-<<<<<<< HEAD
-=======
+
   const navigate = useNavigate()
->>>>>>> e44b437 (ajout sidebar,programme,programme detail)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -29,12 +25,11 @@ export default function LoginScreen() {
     try {
       const result = await login(email, password)
       localStorage.setItem("token", result.token)
-<<<<<<< HEAD
       console.log("Connecté :", result)
-      alert(`Bienvenue ${result.email}`)
-=======
+    
+
       navigate("/programmes")
->>>>>>> e44b437 (ajout sidebar,programme,programme detail)
+ 
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message)

@@ -12,8 +12,4 @@ import java.util.UUID;
 public interface ProgrammeRepository extends JpaRepository<Programme, UUID> {
 
     Page<Programme> findByObjetContainingIgnoreCase(String objet, Pageable pageable);
-<<<<<<< HEAD
-=======
-
->>>>>>> e44b437 (ajout sidebar,programme,programme detail)
 }

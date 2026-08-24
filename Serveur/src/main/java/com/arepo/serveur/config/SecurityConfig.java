@@ -11,12 +11,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.Customizer;
-<<<<<<< HEAD
-=======
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
->>>>>>> e44b437 (ajout sidebar,programme,programme detail)
 
 import java.util.List;
 @Configuration
@@ -39,12 +36,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable());
         http.cors(Customizer.withDefaults());
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll());
-<<<<<<< HEAD
-=======
+
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/swagger-ui.html").permitAll());
->>>>>>> e44b437 (ajout sidebar,programme,programme detail)
+
         http.authorizeHttpRequests((requests) -> {requests.anyRequest().authenticated();});
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authenticationProvider(authenticationProvider);
