@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class ProjetDto {
-    public UUID idProjet; //public
+    public UUID idProjet;
     public String nom;
     public LocalDate dateDebut;
     public LocalDate dateFin;
@@ -19,17 +19,21 @@ public class ProjetDto {
     public String statut;
     public String nomProgramme;
     public String nomCommune;
-    public  Integer nbrPartenaire;
+    public Integer nbrPartenaire;
     public Integer nbrSociete;
     public UUID idProgramme;
     public UUID idCommune;
 
-   // Remplies UNIQUEMENT par fromEntityDetail() (page de detail)
-    public List<String> marches;
-    public List<String> partenaires;
+    // Province/Préfecture de la commune du projet (pour le regroupement "Projets par Province")
+    public UUID idPrefecture;
+    public String nomPrefecture;
 
     public Integer avancementPhysiqueMoyen;
     public Integer avancementFinancierMoyen;
+
+    // Remplies UNIQUEMENT par fromEntityDetail() (page de detail)
+    public List<String> marches;
+    public List<String> partenaires;
 
     public static ProjetDto fromEntity(Projet p) {
         ProjetDto dto = new ProjetDto();
@@ -40,12 +44,28 @@ public class ProjetDto {
         dto.budgetEstime = p.getBudgetEstime();
         dto.statut = p.getStatut();
         dto.nomProgramme = p.getProgramme().getObjet();
+        dto.idProgramme = p.getProgramme().getIdProgramme();
+        dto.idCommune = p.getCommune().getIdCommune();
         dto.nomCommune = p.getCommune().getNom();
-        dto.nbrPartenaire=p.getConventionsSpecifiques().size();
-        dto.nbrSociete=p.getMarches().size();
+        dto.idPrefecture = p.getCommune().getPrefecture().getIdPrefecture();
+        dto.nomPrefecture = p.getCommune().getPrefecture().getNom();
+        dto.nbrPartenaire = p.getConventionsSpecifiques().size();
+        dto.nbrSociete = p.getMarches().size();
+
+        dto.avancementPhysiqueMoyen = p.getMarches().isEmpty()
+                ? null
+                : (int) p.getMarches().stream()
+                .mapToInt(m -> m.getAvancementPhysique() == null ? 0 : m.getAvancementPhysique())
+                .average()
+                .orElse(0);
+        dto.avancementFinancierMoyen = p.getMarches().isEmpty()
+                ? null
+                : (int) p.getMarches().stream()
+                .mapToInt(m -> m.getAvancementFinancier() == null ? 0 : m.getAvancementFinancier())
+                .average()
+                .orElse(0);
         return dto;
     }
-
 
     public static ProjetDto fromEntityDetail(Projet p) {
         ProjetDto dto = fromEntity(p);
@@ -59,23 +79,6 @@ public class ProjetDto {
                 .map(cs -> cs.getPartenaire().getNom())
                 .toList();
 
-        dto.avancementPhysiqueMoyen = p.getMarches().isEmpty()
-                ? null
-                : (int) p.getMarches().stream()
-                .mapToInt(m -> m.getAvancementPhysique() == null ? 0 : m.getAvancementPhysique())
-                .average()
-                .orElse(0);
-        dto.avancementFinancierMoyen=p.getMarches().isEmpty()
-                ? null
-                :(int) p.getMarches().stream()
-                .mapToInt(m -> m.getAvancementFinancier() == null ? 0 : m.getAvancementFinancier())
-                .average()
-                .orElse(0);
         return dto;
     }
-    }
-
-
-
-
-
+}

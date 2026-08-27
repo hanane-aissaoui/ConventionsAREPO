@@ -2,6 +2,7 @@ package com.arepo.serveur.dto;
 
 import com.arepo.serveur.model.Programme;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -22,6 +23,8 @@ public class ProgrammeDto {
     public Double budgetEstime;
     public Integer nbrPartenaire;
     public Integer nbrProjet;
+    public LocalDateTime dateCreation;
+    public LocalDateTime dateUpdate;
     public static ProgrammeDto fromEntity(Programme p) {
         ProgrammeDto dto = new ProgrammeDto();
         dto.idProgramme = p.getIdProgramme();
@@ -31,6 +34,8 @@ public class ProgrammeDto {
         dto.budgetEstime = p.getBudgetEstime();
         dto.nbrPartenaire=p.getConventionsCadre().size();
         dto.nbrProjet=p.getProjets().size();
+        dto.dateCreation=p.getDateCreation();
+        dto.dateUpdate=p.getDateUpdate();
         return dto;
     }
 

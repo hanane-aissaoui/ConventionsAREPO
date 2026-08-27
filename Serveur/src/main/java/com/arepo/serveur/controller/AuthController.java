@@ -2,6 +2,9 @@ package com.arepo.serveur.controller;
 
 import com.arepo.serveur.dto.AuthResponse;
 import com.arepo.serveur.dto.LoginRequest;
+import com.arepo.serveur.dto.ProfileDto;
+import com.arepo.serveur.model.Agent;
+import com.arepo.serveur.model.Compte;
 import com.arepo.serveur.security.CompteUserDetails;
 import com.arepo.serveur.security.JwtService;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +42,24 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(401).body("Email ou mot de passe incorrect");
         }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication authentication) {
+        CompteUserDetails userDetails = (CompteUserDetails) authentication.getPrincipal();
+        Compte compte = userDetails.getCompte();
+        Agent agent = compte.getAgent();
+
+        ProfileDto profile = new ProfileDto(
+                agent.getNom(),
+                agent.getPrenom(),
+                compte.getEmail(),
+                agent.getGrade(),
+                agent.getCin(),
+                agent.getTelephone(),
+                compte.getRole().name()
+        );
+
+        return ResponseEntity.ok(profile);
     }
 }

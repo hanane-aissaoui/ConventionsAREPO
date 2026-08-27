@@ -5,8 +5,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,10 +39,17 @@ public class Programme {
     @Column(name = "budget_estime")
     private Double budgetEstime;
 
+    @CreationTimestamp
+    @Column(name = "date_creation", updatable = false)
+    private LocalDateTime dateCreation;
+
+    @UpdateTimestamp
+    @Column(name = "date_update")
+    private LocalDateTime dateUpdate;
 
     @OneToMany(mappedBy = "programme", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Projet> projets = new ArrayList<>();
 
     @OneToMany(mappedBy = "programme", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConventionCadre> conventionsCadre= new ArrayList<>();;
+    private List<ConventionCadre> conventionsCadre = new ArrayList<>();
 }

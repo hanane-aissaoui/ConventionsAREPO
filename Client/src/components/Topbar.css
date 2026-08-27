@@ -15,6 +15,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0; /* permet à ce conteneur de rétrécir dans le flex du .topbar */
+  flex: 1;
+  overflow: hidden;
 }
 
 .topbar__menu-btn {
@@ -24,17 +27,26 @@
   color: #4B5563;
   cursor: pointer;
   padding: 6px;
+  flex-shrink: 0; /* le bouton menu ne doit jamais rétrécir */
 }
 
 .breadcrumb {
   display: flex;
   align-items: center;
   font-size: 13px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .breadcrumb__item {
   color: #6B7280;
   text-decoration: none;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .breadcrumb__item:hover {
@@ -46,17 +58,20 @@
   font-weight: 700;
   text-decoration: none;
   cursor: default;
+  max-width: 220px;
 }
 
 .breadcrumb__sep {
   margin: 0 8px;
   color: #C4C9D0;
+  flex-shrink: 0; /* le séparateur ne doit jamais être compressé */
 }
 
 .topbar__right {
   display: flex;
   align-items: center;
   gap: 18px;
+  flex-shrink: 0; /* le bouton déconnexion reste toujours pleine largeur, jamais tronqué */
 }
 
 /* Correction : Suppression du positionnement absolu pour afficher le bouton proprement en ligne */
@@ -71,8 +86,8 @@
   align-items: center;
   gap: 9px;
   padding: 8px 14px;
-  border: 1px solid #F3F4F6; /* Ajout d'une légère bordure discrète */
-  border-radius: 6px;       /* Coins arrondis pour un effet bouton propre */
+  border: 1px solid #F3F4F6;
+  border-radius: 6px;
   background: none;
   font-size: 13px;
   font-weight: 500;

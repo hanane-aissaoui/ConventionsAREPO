@@ -24,7 +24,7 @@ public class ProgrammeController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String objet) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("dateDebut").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dateUpdate").descending());
         return programmeService.findAll(pageable, objet);
     }
 

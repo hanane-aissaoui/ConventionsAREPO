@@ -1,26 +1,24 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Pencil, Download, Trash2, Calendar, DollarSign, Users, FolderOpen, Plus } from "lucide-react"
+import {
+  ArrowLeft, Pencil, Trash2, Calendar, DollarSign, Users,
+  FolderOpen, Plus, ChevronDown, ChevronRight, MapPin,
+} from "lucide-react"
 import { useAppDispatch, useAppSelector } from "../store/hooks"
 import {
-  fetchProgrammeById,
-  editProgrammeDetail,
-  removeProgramme,
-  clearProgrammeDetail,
-  resetEditStatus,
+  fetchProgrammeById, editProgrammeDetail, removeProgramme, clearProgrammeDetail, resetEditStatus,
   fetchPartenairesList,
-  fetchConventionsCadre,
-  addConventionCadre,
-  editConventionCadre,
-  removeConventionCadre,
-  resetAddConventionStatus,
-  resetEditConventionStatus,
-  resetDeleteConventionStatus,
+  fetchConventionsCadre, addConventionCadre, editConventionCadre, removeConventionCadre,
+  resetAddConventionStatus, resetEditConventionStatus, resetDeleteConventionStatus,
+  fetchProjets, addProjet, editProjet, removeProjet,
+  resetAddProjetStatus, resetEditProjetStatus, resetDeleteProjetStatus,
 } from "../store/programmesDetailSlice"
 import ProgrammeModal, { type ProgrammeFormValues } from "../components/ProgrammeModal"
 import ConfirmDialog from "../components/ConfirmDialog"
 import AssocierPartenaireModal, { type ConventionFormValues } from "../components/AssocierPartenaireModal"
+import ProjetModal, { type ProjetFormValues } from "../components/ProjetModal"
 import type { ConventionCadre } from "../types/conventionCadre"
+import type { ProjetDto } from "../types/projet"
 import "./ProgrammeDetail.css"
 
 function formatMontant(montant: number | null): string {
@@ -30,11 +28,82 @@ function formatMontant(montant: number | null): string {
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—"
-  return new Date(dateStr).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  })
+  return new Date(dateStr).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
+}
+
+function EtatBadge({ etat }: { etat: string }) {
+  const isSignee = etat === "Signée"
+  return <span className={`etat-badge ${isSignee ? "etat-badge--ok" : ""}`}>{etat}</span>
+}
+
+function StatutBadge({ statut }: { statut: string | null }) {
+  const isRetard = statut === "En retard"
+  return (
+    <span className={`statut-badge ${isRetard ? "statut-badge--retard" : "statut-badge--cours"}`}>
+      {statut ?? "—"}
+    </span>
+  )
+}
+
+// Regroupe les projets par nomPrefecture (province/préfecture)
+function groupProjetsByPrefecture(projets: ProjetDto[]) {
+  const map = new Map<string, ProjetDto[]>()
+  for (const p of projets) {
+    const key = p.nomPrefecture?.trim() || "Non renseignée"
+    if (!map.has(key)) map.set(key, [])
+    map.get(key)!.push(p)
+  }
+  return Array.from(map.entries()).map(([nomPrefecture, items]) => ({ nomPrefecture, projets: items }))
+}
+
+function ProvinceProjetsGroup({
+  nomPrefecture, projets, onAddProjet, onEditProjet, onDeleteProjet, onRowClick,
+}: {
+  nomPrefecture: string
+  projets: ProjetDto[]
+  onAddProjet: () => void
+  onEditProjet: (p: ProjetDto) => void
+  onDeleteProjet: (p: ProjetDto) => void
+  onRowClick: (p: ProjetDto) => void
+}) {
+  const [open, setOpen] = useState(false) // fermé par défaut à l'ouverture de la page
+
+  return (
+    <div className="province-group">
+      <div className="province-group__header">
+        <button className="province-group__toggle" onClick={() => setOpen((o) => !o)} aria-label={open ? "Fermer la province" : "Ouvrir la province"}>
+          {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </button>
+        <MapPin size={15} className="province-group__pin" />
+        <span className="province-group__title">{nomPrefecture}</span>
+        <span className="province-group__count">{projets.length} projet{projets.length > 1 ? "s" : ""}</span>
+      </div>
+
+      {open && (
+        <div className="table-container table-container--projets">
+          <table className="projets-table">
+            <thead>
+              <tr><th>Nom du Projet</th><th>Période</th><th>Budget</th><th>Statut</th><th></th></tr>
+            </thead>
+            <tbody>
+              {projets.map((p) => (
+                <tr key={p.idProjet} className="row-clickable" onClick={() => onRowClick(p)}>
+                  <td className="cell-nom">{p.nom}</td>
+                  <td className="projet-periode">{formatDate(p.dateDebut)} → {formatDate(p.dateFin)}</td>
+                  <td className="projet-budget">{formatMontant(p.budgetEstime)}</td>
+                  <td><StatutBadge statut={p.statut} /></td>
+                  <td className="row-actions" onClick={(e) => e.stopPropagation()}>
+                    <button className="icon-btn" onClick={() => onEditProjet(p)} aria-label="Modifier"><Pencil size={14} /></button>
+                    <button className="icon-btn icon-btn--danger" onClick={() => onDeleteProjet(p)} aria-label="Supprimer"><Trash2 size={14} /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function ProgrammeDetail() {
@@ -43,16 +112,9 @@ export default function ProgrammeDetail() {
   const dispatch = useAppDispatch()
 
   const {
-    current: programme,
-    status,
-    error,
-    editStatus,
-    deleteStatus,
-    partenaires,
-    conventionsCadre,
-    addConventionStatus,
-    editConventionStatus,
-    deleteConventionStatus,
+    current: programme, status, error, editStatus, deleteStatus,
+    partenaires, conventionsCadre, addConventionStatus, editConventionStatus, deleteConventionStatus,
+    projets, addProjetStatus, editProjetStatus, deleteProjetStatus,
   } = useAppSelector((state) => state.programmeDetail)
 
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -61,38 +123,32 @@ export default function ProgrammeDetail() {
   const [conventionModalOpen, setConventionModalOpen] = useState(false)
   const [conventionModalMode, setConventionModalMode] = useState<"create" | "edit">("create")
   const [editingConvention, setEditingConvention] = useState<ConventionCadre | null>(null)
-
   const [deleteConventionTarget, setDeleteConventionTarget] = useState<ConventionCadre | null>(null)
+
+  const [projetModalOpen, setProjetModalOpen] = useState(false)
+  const [editingProjet, setEditingProjet] = useState<ProjetDto | null>(null)
+  const [deleteProjetTarget, setDeleteProjetTarget] = useState<ProjetDto | null>(null)
 
   useEffect(() => {
     if (id) {
       dispatch(fetchProgrammeById(id))
       dispatch(fetchConventionsCadre(id))
       dispatch(fetchPartenairesList())
+      dispatch(fetchProjets(id))
     }
-    return () => {
-      dispatch(clearProgrammeDetail())
-    }
+    return () => { dispatch(clearProgrammeDetail()) }
   }, [id, dispatch])
 
   useEffect(() => {
-    if (editStatus === "succeeded") {
-      setEditModalOpen(false)
-      dispatch(resetEditStatus())
-    }
+    if (editStatus === "succeeded") { setEditModalOpen(false); dispatch(resetEditStatus()) }
   }, [editStatus, dispatch])
 
   useEffect(() => {
-    if (deleteStatus === "succeeded") {
-      navigate("/programmes")
-    }
+    if (deleteStatus === "succeeded") navigate("/programmes")
   }, [deleteStatus, navigate])
 
   useEffect(() => {
-    if (addConventionStatus === "succeeded") {
-      setConventionModalOpen(false)
-      dispatch(resetAddConventionStatus())
-    }
+    if (addConventionStatus === "succeeded") { setConventionModalOpen(false); dispatch(resetAddConventionStatus()) }
   }, [addConventionStatus, dispatch])
 
   useEffect(() => {
@@ -104,30 +160,43 @@ export default function ProgrammeDetail() {
   }, [editConventionStatus, dispatch])
 
   useEffect(() => {
-    if (deleteConventionStatus === "succeeded") {
-      setDeleteConventionTarget(null)
-      dispatch(resetDeleteConventionStatus())
-    }
+    if (deleteConventionStatus === "succeeded") { setDeleteConventionTarget(null); dispatch(resetDeleteConventionStatus()) }
   }, [deleteConventionStatus, dispatch])
+
+  useEffect(() => {
+    if (addProjetStatus === "succeeded") {
+      setProjetModalOpen(false)
+      setEditingProjet(null)
+      dispatch(resetAddProjetStatus())
+    }
+  }, [addProjetStatus, dispatch])
+
+  useEffect(() => {
+    if (editProjetStatus === "succeeded") {
+      setProjetModalOpen(false)
+      setEditingProjet(null)
+      dispatch(resetEditProjetStatus())
+    }
+  }, [editProjetStatus, dispatch])
+
+  useEffect(() => {
+    if (deleteProjetStatus === "succeeded") { setDeleteProjetTarget(null); dispatch(resetDeleteProjetStatus()) }
+  }, [deleteProjetStatus, dispatch])
 
   const handleEditSubmit = (values: ProgrammeFormValues) => {
     if (!id) return
-    dispatch(
-      editProgrammeDetail({
-        id,
-        payload: {
-          objet: values.objet.trim(),
-          dateDebut: values.dateDebut,
-          dateFin: values.dateFin || null,
-          budgetEstime: Number(values.budgetEstime),
-        },
-      })
-    )
+    dispatch(editProgrammeDetail({
+      id,
+      payload: {
+        objet: values.objet.trim(),
+        dateDebut: values.dateDebut,
+        dateFin: values.dateFin || null,
+        budgetEstime: Number(values.budgetEstime),
+      },
+    }))
   }
 
-  const handleConfirmDelete = () => {
-    if (id) dispatch(removeProgramme(id))
-  }
+  const handleConfirmDelete = () => { if (id) dispatch(removeProgramme(id)) }
 
   const openCreateConventionModal = () => {
     setConventionModalMode("create")
@@ -143,7 +212,6 @@ export default function ProgrammeDetail() {
 
   const handleConventionSubmit = (values: ConventionFormValues) => {
     if (!id) return
-
     const payload = {
       idPartenaire: values.idPartenaire,
       idProgramme: id,
@@ -152,23 +220,14 @@ export default function ProgrammeDetail() {
       etatConvention: values.etatConvention,
       dateParticipation: values.dateParticipation || null,
     }
-
     if (conventionModalMode === "edit" && editingConvention) {
-      dispatch(
-        editConventionCadre({
-          id: editingConvention.idConventionCadre,
-          idProgramme: id,
-          payload,
-        })
-      )
+      dispatch(editConventionCadre({ id: editingConvention.idConventionCadre, idProgramme: id, payload }))
     } else {
       dispatch(addConventionCadre(payload))
     }
   }
 
-  const handleDeleteConventionClick = (convention: ConventionCadre) => {
-    setDeleteConventionTarget(convention)
-  }
+  const handleDeleteConventionClick = (convention: ConventionCadre) => setDeleteConventionTarget(convention)
 
   const handleConfirmDeleteConvention = () => {
     if (deleteConventionTarget && id) {
@@ -176,7 +235,6 @@ export default function ProgrammeDetail() {
     }
   }
 
-  // Convertit une ConventionCadre en valeurs de formulaire (strings) pour pré-remplir l'édition
   const toConventionFormValues = (c: ConventionCadre): ConventionFormValues => ({
     idPartenaire: c.idPartenaire,
     etatConvention: c.etatConvention,
@@ -185,12 +243,47 @@ export default function ProgrammeDetail() {
     dateParticipation: c.dateParticipation ?? "",
   })
 
+  // ---- Projets ----
+
+  const openCreateProjetModal = () => { setEditingProjet(null); setProjetModalOpen(true) }
+  const openEditProjetModal = (p: ProjetDto) => { setEditingProjet(p); setProjetModalOpen(true) }
+
+  const handleProjetSubmit = (values: ProjetFormValues) => {
+    if (!id) return
+    const payload = {
+      nom: values.nom.trim(),
+      idProgramme: id,
+      idCommune: values.idCommune,
+      dateDebut: values.dateDebut,
+      dateFin: values.dateFin || null,
+      budgetEstime: values.budgetEstime ? Number(values.budgetEstime) : null,
+      statut: values.statut,
+      nomPrefecture: "",
+    }
+    if (editingProjet) {
+      dispatch(editProjet({ id: editingProjet.idProjet, idProgramme: id, payload }))
+    } else {
+      dispatch(addProjet(payload))
+    }
+  }
+
+  const handleDeleteProjetClick = (p: ProjetDto) => setDeleteProjetTarget(p)
+
+  const handleConfirmDeleteProjet = () => {
+    if (deleteProjetTarget && id) dispatch(removeProjet({ id: deleteProjetTarget.idProjet, idProgramme: id }))
+  }
+
+  const toProjetFormValues = (p: ProjetDto): ProjetFormValues => ({
+    nom: p.nom,
+    idCommune: p.idCommune,
+    dateDebut: p.dateDebut ?? "",
+    dateFin: p.dateFin ?? "",
+    budgetEstime: p.budgetEstime != null ? String(p.budgetEstime) : "",
+    statut: p.statut ?? "",
+  })
+
   if (status === "loading") {
-    return (
-      <div className="programme-detail">
-        <p className="programme-detail__state">Chargement...</p>
-      </div>
-    )
+    return <div className="programme-detail"><p className="programme-detail__state">Chargement...</p></div>
   }
 
   if (status === "failed" || !programme) {
@@ -203,6 +296,8 @@ export default function ProgrammeDetail() {
     )
   }
 
+  const groupesProjets = groupProjetsByPrefecture(projets)
+
   return (
     <div className="programme-detail">
       <button className="back-link" onClick={() => navigate("/programmes")}>
@@ -211,22 +306,10 @@ export default function ProgrammeDetail() {
 
       <div className="detail-card">
         <div className="detail-card__top">
-          <div>
-            <h1 className="detail-card__title">{programme.objet}</h1>
-          </div>
-
+          <h1 className="detail-card__title">{programme.objet}</h1>
           <div className="detail-card__actions">
-            <button className="btn-outline" onClick={() => setEditModalOpen(true)}>
-              <Pencil size={14} />
-            </button>
-           {/* <button className="btn-primary-solid">
-              <Download size={14} /> Exporter
-            </button>*/}
-            <button
-              className="btn-danger-outline"
-              onClick={() => setDeleteDialogOpen(true)}
-              disabled={deleteStatus === "loading"}
-            >
+            <button className="btn-outline" onClick={() => setEditModalOpen(true)}><Pencil size={14} /></button>
+            <button className="btn-danger-outline" onClick={() => setDeleteDialogOpen(true)} disabled={deleteStatus === "loading"}>
               <Trash2 size={14} />
             </button>
           </div>
@@ -267,19 +350,11 @@ export default function ProgrammeDetail() {
         <div className="table-container">
           <table>
             <thead>
-              <tr>
-                <th>Partenaire</th>
-                <th>Contribution</th>
-                <th>Débloqué</th>
-                <th>Date de Participation</th>
-                <th></th>
-              </tr>
+              <tr><th>Partenaire</th><th>Contribution</th><th>Débloqué</th><th>Date de Participation</th><th>État</th><th></th></tr>
             </thead>
             <tbody>
               {conventionsCadre.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="empty-state">Aucune convention.</td>
-                </tr>
+                <tr><td colSpan={6} className="empty-state">Aucune convention.</td></tr>
               )}
               {conventionsCadre.map((c) => {
                 const partenaireAssocie = partenaires.find((p) => p.idPartenaire === c.idPartenaire)
@@ -289,21 +364,10 @@ export default function ProgrammeDetail() {
                     <td>{formatMontant(c.montantContribution)}</td>
                     <td>{formatMontant(c.montantDebloque)}</td>
                     <td>{formatDate(c.dateParticipation)}</td>
+                    <td><EtatBadge etat={c.etatConvention} /></td>
                     <td className="row-actions">
-                      <button
-                        className="icon-btn"
-                        onClick={() => openEditConventionModal(c)}
-                        aria-label="Modifier"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        className="icon-btn icon-btn--danger"
-                        onClick={() => handleDeleteConventionClick(c)}
-                        aria-label="Supprimer"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <button className="icon-btn" onClick={() => openEditConventionModal(c)} aria-label="Modifier"><Pencil size={14} /></button>
+                      <button className="icon-btn icon-btn--danger" onClick={() => handleDeleteConventionClick(c)} aria-label="Supprimer"><Trash2 size={14} /></button>
                     </td>
                   </tr>
                 )
@@ -313,33 +377,46 @@ export default function ProgrammeDetail() {
         </div>
       </div>
 
-      {/* Projets */}
+      {/* Projets par Province */}
       <div className="section-block">
         <div className="section-block__header">
-          <p className="section-block__title">Projets ({programme.nbrProjet})</p>
+          <div className="section-block__title-group">
+            <p className="section-block__title">Projets ({projets.length})</p>
+            <p className="section-block__subtitle">
+              {groupesProjets.length} province{groupesProjets.length > 1 ? "s" : ""} concernée{groupesProjets.length > 1 ? "s" : ""}
+            </p>
+          </div>
+          <button className="btn-primary-solid btn-sm" onClick={openCreateProjetModal}>
+            <Plus size={14} /> Ajouter un Projet
+          </button>
         </div>
-        <div className="table-container table-container--projets">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nom du Projet</th>
-                <th>Période</th>
-                <th>Budget</th>
-                <th>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan={5} className="empty-state">
-                  <FolderOpen size={16} style={{ marginBottom: 6 }} />
-                  <br />
-                  Aucun projet associé à ce programme.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+
+        {groupesProjets.length === 0 ? (
+          <div className="table-container">
+            <table>
+              <tbody>
+                <tr>
+                  <td className="empty-state">
+                    <FolderOpen size={16} style={{ marginBottom: 6 }} /><br />
+                    Aucun projet associé à ce programme.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          groupesProjets.map((groupe) => (
+            <ProvinceProjetsGroup
+              key={groupe.nomPrefecture}
+              nomPrefecture={groupe.nomPrefecture}
+              projets={groupe.projets}
+              onAddProjet={openCreateProjetModal}
+              onEditProjet={openEditProjetModal}
+              onDeleteProjet={handleDeleteProjetClick}
+              onRowClick={(p) => navigate(`/projets/${p.idProjet}`)}
+            />
+          ))
+        )}
       </div>
 
       <ProgrammeModal
@@ -382,6 +459,25 @@ export default function ProgrammeDetail() {
         isLoading={deleteConventionStatus === "loading"}
         onConfirm={handleConfirmDeleteConvention}
         onCancel={() => setDeleteConventionTarget(null)}
+      />
+
+      <ProjetModal
+        isOpen={projetModalOpen}
+        isSubmitting={editingProjet ? editProjetStatus === "loading" : addProjetStatus === "loading"}
+        mode={editingProjet ? "edit" : "create"}
+        initialValues={editingProjet ? toProjetFormValues(editingProjet) : undefined}
+        existingCommuneLabel={editingProjet ? `${editingProjet.nomCommune} — ${editingProjet.nomPrefecture}` : undefined}
+        onClose={() => { setProjetModalOpen(false); setEditingProjet(null) }}
+        onSubmit={handleProjetSubmit}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteProjetTarget}
+        title="Supprimer le projet"
+        message={`Êtes-vous sûr de vouloir supprimer "${deleteProjetTarget?.nom}" ? Cette action est irréversible.`}
+        isLoading={deleteProjetStatus === "loading"}
+        onConfirm={handleConfirmDeleteProjet}
+        onCancel={() => setDeleteProjetTarget(null)}
       />
     </div>
   )

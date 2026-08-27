@@ -1,0 +1,229 @@
+.territoire-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.territoire-nom {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a2332;
+  flex: 1;
+}
+
+.territoire-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.territoire-row:hover .territoire-actions {
+  opacity: 1;
+}
+
+.icon-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #E3E2E2;
+  border-radius: 6px;
+  background: #fff;
+  color: #6B7280;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: #F0F0F0;
+}
+
+.icon-btn--danger {
+  color: #C64A11;
+  border-color: #F3D4C4;
+}
+
+.icon-btn--danger:hover {
+  background: #FCEEE6;
+}
+
+.icon-btn--confirm {
+  color: #1B8A3E;
+  border-color: #B8E4C4;
+}
+
+.territoire-input {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid #145A8D;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+
+
+
+
+
+.territoire-container {
+  padding: 24px;
+}
+
+.territoire-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.territoire-header h1{  font-size: 20px;
+  font-weight: 700;
+  color: #145A8D;
+  margin: 0 0 4px;
+}
+
+.territoire-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #145A8D;
+  margin: 0 0 4px;
+}
+
+.territoire-subtitle {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #145A8D;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #0E4570;
+}
+
+.territoire-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid #E3E2E2;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.stat-blue { color: #145A8D; }
+.stat-orange { color: #C64A11; }
+.stat-green { color: #1B8A3E; }
+
+.stat-label {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+
+.territoire-tree {
+  background: #fff;
+  border: 1px solid #E3E2E2;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.territoire-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.territoire-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6B7280;
+  display: flex;
+  padding: 0;
+}
+
+.territoire-toggle-spacer {
+  width: 16px;
+}
+
+
+.territoire-badge {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge-region {
+  background: #145A8D;
+  color: #fff;
+}
+
+.badge-prefecture {
+  background: #DCEBFA;
+  color: #145A8D;
+}
+
+.badge-commune {
+  background: #E7F6EC;
+  color: #1B8A3E;
+}
+.badge-province {
+  background: #FCEEE6;
+  color: #C64A11;
+}
+
+.territoire-type-toggle {
+  display: flex;
+  border: 1px solid #E3E2E2;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.type-toggle-btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: #fff;
+  color: #6B7280;
+  cursor: pointer;
+}
+
+.type-toggle-btn.active {
+  color: #fff;
+  background: #6B7280;
+}
+
+.type-toggle-btn + .type-toggle-btn {
+  border-left: 1px solid #E3E2E2;
+}

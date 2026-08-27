@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -80,6 +81,12 @@ public class ProjetService {
         Commune commune = communeRepository.findById(request.getIdCommune())
                 .orElseThrow(() -> new RuntimeException("Commune introuvable : " + request.getIdCommune()));
         projet.setCommune(commune);
+    }
+    public List<ProjetDto> findByProgramme(UUID idProgramme) {
+        return projetRepository.findByProgrammeIdProgramme(idProgramme)
+                .stream()
+                .map(ProjetDto::fromEntity)
+                .toList();
     }
 }
 

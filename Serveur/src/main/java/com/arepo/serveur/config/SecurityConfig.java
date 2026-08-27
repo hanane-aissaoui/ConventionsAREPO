@@ -35,7 +35,7 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable());
         http.cors(Customizer.withDefaults());
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll());
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/login").permitAll());
 
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/swagger-ui/**",
                 "/v3/api-docs/**",
@@ -47,16 +47,6 @@ public class SecurityConfig {
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+
 }

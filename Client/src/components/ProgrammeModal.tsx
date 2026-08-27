@@ -35,7 +35,6 @@ export default function ProgrammeModal({
   const [form, setForm] = useState<ProgrammeFormValues>(initialValues ?? emptyForm)
   const [errors, setErrors] = useState<Partial<Record<keyof ProgrammeFormValues, string>>>({})
 
-  // Recharge le formulaire à chaque ouverture (utile en mode édition, quand on change de programme)
   useEffect(() => {
     if (isOpen) {
       setForm(initialValues ?? emptyForm)

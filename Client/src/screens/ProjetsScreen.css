@@ -2,7 +2,7 @@
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: 'Inter', sans-serif;
+  
 }
 
 .projets-page__header {
@@ -16,7 +16,7 @@
 .projets-page__header h1 {
   font-size: 20px;
   font-weight: 700;
-  color: #1a2332;
+  color: #145A8D;
   margin: 0 0 4px;
 }
 

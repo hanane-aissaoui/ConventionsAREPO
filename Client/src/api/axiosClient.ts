@@ -7,11 +7,12 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("token")
-  // On n'attache jamais le token sur les routes d'authentification (login, etc.) :
+  // Seules les routes publiques (login, register) ne doivent pas porter le token :
   // un token expiré/invalide traînant dans le localStorage ferait rejeter la requête
-  // par le JwtAuthenticationFilter côté serveur avant même d'atteindre /api/auth/**.
-  const isAuthRoute = config.url?.includes("/auth/")
-  if (token && !isAuthRoute) {
+  // par le JwtAuthenticationFilter côté serveur avant même d'atteindre ces routes.
+  // "/auth/me" a besoin du token, donc on ne peut pas exclure tout "/auth/".
+  const isPublicAuthRoute = /\/auth\/(login|register)(\/|$)/.test(config.url ?? "")
+  if (token && !isPublicAuthRoute) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config

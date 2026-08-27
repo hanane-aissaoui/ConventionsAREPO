@@ -5,7 +5,9 @@ import { store } from "./store/store";
 import ProgrammesPage from "./screens/ProgrammesScreen";
 import ProgrammeDetail from "./screens/ProgrammeDetail";
 import ProjetsScreen from "./screens/ProjetsScreen";
+import ParametresScreen from "./screens/ParametresScreen";
 import FicheProjet from "./screens/FicheProjet";
+import TerritoireScreen from "./screens/TerritoireScreen";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
@@ -59,6 +61,26 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <FicheProjet />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parametres/"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ParametresScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/territoire"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <TerritoireScreen />
                 </Layout>
               </ProtectedRoute>
             }

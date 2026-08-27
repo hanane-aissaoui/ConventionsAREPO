@@ -12,7 +12,4 @@ public interface CompteRepository extends JpaRepository<Compte, Integer> {
 
     Optional<Compte> findByEmail(String email);
 
-    boolean existsByEmail(String email);
-
-    Optional<Compte> findByAgent_IdAgent(UUID idAgent);
-}
+   }

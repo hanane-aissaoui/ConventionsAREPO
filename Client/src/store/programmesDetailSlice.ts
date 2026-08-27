@@ -7,9 +7,16 @@ import {
   updateConventionCadre,
   deleteConventionCadre,
 } from "../api/conventionsCadreApi"
+import {
+  fetchProjetsByProgramme,
+  createProjet,
+  updateProjet,
+  deleteProjet,
+} from "../api/projetApi"
 import type { Programme, ProgrammeCreateRequest } from "../types/programme"
 import type { Partenaire } from "../types/partenaire"
 import type { ConventionCadre, ConventionCadreCreateRequest } from "../types/conventionCadre"
+import type { ProjetDto, ProjetRequest } from "../types/projet"
 
 export const fetchProgrammeById = createAsyncThunk(
   "programmeDetail/fetchById",
@@ -47,7 +54,6 @@ export const addConventionCadre = createAsyncThunk(
   }
 )
 
-// Modifie une convention existante, puis recharge la liste
 export const editConventionCadre = createAsyncThunk(
   "programmeDetail/editConventionCadre",
   async (
@@ -59,12 +65,45 @@ export const editConventionCadre = createAsyncThunk(
   }
 )
 
-// Supprime une convention, puis recharge la liste
 export const removeConventionCadre = createAsyncThunk(
   "programmeDetail/removeConventionCadre",
   async ({ id, idProgramme }: { id: string; idProgramme: string }, { dispatch }) => {
     await deleteConventionCadre(id)
     await dispatch(fetchConventionsCadre(idProgramme))
+  }
+)
+
+// ---- Projets ----
+
+export const fetchProjets = createAsyncThunk(
+  "programmeDetail/fetchProjets",
+  async (idProgramme: string) => fetchProjetsByProgramme(idProgramme)
+)
+
+export const addProjet = createAsyncThunk(
+  "programmeDetail/addProjet",
+  async (payload: ProjetRequest, { dispatch }) => {
+    await createProjet(payload)
+    await dispatch(fetchProjets(payload.idProgramme))
+  }
+)
+
+export const editProjet = createAsyncThunk(
+  "programmeDetail/editProjet",
+  async (
+    { id, idProgramme, payload }: { id: string; idProgramme: string; payload: ProjetRequest },
+    { dispatch }
+  ) => {
+    await updateProjet(id, payload)
+    await dispatch(fetchProjets(idProgramme))
+  }
+)
+
+export const removeProjet = createAsyncThunk(
+  "programmeDetail/removeProjet",
+  async ({ id, idProgramme }: { id: string; idProgramme: string }, { dispatch }) => {
+    await deleteProjet(id)
+    await dispatch(fetchProjets(idProgramme))
   }
 )
 
@@ -91,6 +130,17 @@ interface ProgrammeDetailState {
   editConventionError: string | null
 
   deleteConventionStatus: "idle" | "loading" | "succeeded" | "failed"
+
+  projets: ProjetDto[]
+  projetsStatus: "idle" | "loading" | "succeeded" | "failed"
+
+  addProjetStatus: "idle" | "loading" | "succeeded" | "failed"
+  addProjetError: string | null
+
+  editProjetStatus: "idle" | "loading" | "succeeded" | "failed"
+  editProjetError: string | null
+
+  deleteProjetStatus: "idle" | "loading" | "succeeded" | "failed"
 }
 
 const initialState: ProgrammeDetailState = {
@@ -109,6 +159,13 @@ const initialState: ProgrammeDetailState = {
   editConventionStatus: "idle",
   editConventionError: null,
   deleteConventionStatus: "idle",
+  projets: [],
+  projetsStatus: "idle",
+  addProjetStatus: "idle",
+  addProjetError: null,
+  editProjetStatus: "idle",
+  editProjetError: null,
+  deleteProjetStatus: "idle",
 }
 
 const programmeDetailSlice = createSlice({
@@ -130,6 +187,17 @@ const programmeDetailSlice = createSlice({
     },
     resetDeleteConventionStatus: (state) => {
       state.deleteConventionStatus = "idle"
+    },
+    resetAddProjetStatus: (state) => {
+      state.addProjetStatus = "idle"
+      state.addProjetError = null
+    },
+    resetEditProjetStatus: (state) => {
+      state.editProjetStatus = "idle"
+      state.editProjetError = null
+    },
+    resetDeleteProjetStatus: (state) => {
+      state.deleteProjetStatus = "idle"
     },
   },
   extraReducers: (builder) => {
@@ -198,7 +266,6 @@ const programmeDetailSlice = createSlice({
         state.addConventionStatus = "failed"
         state.addConventionError = action.error.message ?? "Erreur lors de la création de la convention"
       })
-      // Édition convention
       .addCase(editConventionCadre.pending, (state) => {
         state.editConventionStatus = "loading"
         state.editConventionError = null
@@ -210,7 +277,6 @@ const programmeDetailSlice = createSlice({
         state.editConventionStatus = "failed"
         state.editConventionError = action.error.message ?? "Erreur lors de la modification de la convention"
       })
-      // Suppression convention
       .addCase(removeConventionCadre.pending, (state) => {
         state.deleteConventionStatus = "loading"
       })
@@ -219,6 +285,48 @@ const programmeDetailSlice = createSlice({
       })
       .addCase(removeConventionCadre.rejected, (state) => {
         state.deleteConventionStatus = "failed"
+      })
+      // Projets
+      .addCase(fetchProjets.pending, (state) => {
+        state.projetsStatus = "loading"
+      })
+      .addCase(fetchProjets.fulfilled, (state, action) => {
+        state.projetsStatus = "succeeded"
+        state.projets = action.payload
+      })
+      .addCase(fetchProjets.rejected, (state) => {
+        state.projetsStatus = "failed"
+      })
+      .addCase(addProjet.pending, (state) => {
+        state.addProjetStatus = "loading"
+        state.addProjetError = null
+      })
+      .addCase(addProjet.fulfilled, (state) => {
+        state.addProjetStatus = "succeeded"
+      })
+      .addCase(addProjet.rejected, (state, action) => {
+        state.addProjetStatus = "failed"
+        state.addProjetError = action.error.message ?? "Erreur lors de la création du projet"
+      })
+      .addCase(editProjet.pending, (state) => {
+        state.editProjetStatus = "loading"
+        state.editProjetError = null
+      })
+      .addCase(editProjet.fulfilled, (state) => {
+        state.editProjetStatus = "succeeded"
+      })
+      .addCase(editProjet.rejected, (state, action) => {
+        state.editProjetStatus = "failed"
+        state.editProjetError = action.error.message ?? "Erreur lors de la modification du projet"
+      })
+      .addCase(removeProjet.pending, (state) => {
+        state.deleteProjetStatus = "loading"
+      })
+      .addCase(removeProjet.fulfilled, (state) => {
+        state.deleteProjetStatus = "succeeded"
+      })
+      .addCase(removeProjet.rejected, (state) => {
+        state.deleteProjetStatus = "failed"
       })
   },
 })
@@ -229,5 +337,8 @@ export const {
   resetAddConventionStatus,
   resetEditConventionStatus,
   resetDeleteConventionStatus,
+  resetAddProjetStatus,
+  resetEditProjetStatus,
+  resetDeleteProjetStatus,
 } = programmeDetailSlice.actions
 export default programmeDetailSlice.reducer

@@ -16,6 +16,11 @@ export async function fetchProjetById(id: string): Promise<ProjetDto> {
   return response.data
 }
 
+export async function fetchProjetsByProgramme(idProgramme: string): Promise<ProjetDto[]> {
+  const response = await axiosClient.get<ProjetDto[]>(`/projets/programme/${idProgramme}`)
+  return response.data
+}
+
 export async function createProjet(data: ProjetRequest): Promise<ProjetDto> {
   const response = await axiosClient.post<ProjetDto>("/projets", data)
   return response.data

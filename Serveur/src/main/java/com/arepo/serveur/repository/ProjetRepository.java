@@ -21,5 +21,5 @@ public interface ProjetRepository extends JpaRepository<Projet, UUID> {
             "LOWER(p.programme.objet) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(p.commune.prefecture.nom) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Projet> search(@Param("search") String search, Pageable pageable);
-
+    List<Projet> findByProgrammeIdProgramme(UUID idProgramme);
 }

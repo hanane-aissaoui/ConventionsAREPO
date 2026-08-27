@@ -23,7 +23,6 @@ export default function ProgrammesScreen() {
     useAppSelector((state) => state.programmes)
 
   const [inputValue, setInputValue] = useState(searchTerm)
-
   // Modal création/édition
   const [modalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<"create" | "edit">("create")

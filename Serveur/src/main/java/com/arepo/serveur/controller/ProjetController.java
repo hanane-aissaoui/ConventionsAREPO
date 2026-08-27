@@ -10,6 +10,7 @@ import com.arepo.serveur.dto.PageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -19,22 +20,25 @@ import java.util.UUID;
 public class ProjetController {
 
   @Autowired
-    public  ProjetService projetService;
+  public ProjetService projetService;
 
-    // Liste paginee
-    @GetMapping
-    public PageResponse<ProjetDto> getPage(
-            @RequestParam(required = false, defaultValue = "") String search,
-            Pageable pageable
-    ) {
+  @GetMapping
+  public PageResponse<ProjetDto> getPage(
+          @RequestParam(required = false, defaultValue = "") String search,
+          Pageable pageable
+  ) {
+    return projetService.findPage(search, pageable);
+  }
 
-        return projetService.findPage(search, pageable);
-    }
-   // Pour le detail d'un projet
-   @GetMapping("/{id}")
-   public ProjetDto getById(@PathVariable UUID id) {
-     return projetService.findById(id);
-   }
+  @GetMapping("/{id}")
+  public ProjetDto getById(@PathVariable UUID id) {
+    return projetService.findById(id);
+  }
+
+  @GetMapping("/programme/{idProgramme}")
+  public List<ProjetDto> getByProgramme(@PathVariable UUID idProgramme) {
+    return projetService.findByProgramme(idProgramme);
+  }
 
   @PostMapping
   public ResponseEntity<ProjetDto> create(@RequestBody ProjetDto request) {

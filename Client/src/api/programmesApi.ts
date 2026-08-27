@@ -34,3 +34,4 @@ export async function updateProgramme(id: string, payload: ProgrammeCreateReques
   const response = await axiosClient.put<Programme>(`/programmes/${id}`, payload)
   return response.data
 }
+

@@ -8,7 +8,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
-  if (totalPages <= 1) return null
+  
 
   const currentPage = page + 1 // conversion 0-indexé (backend) → 1-indexé (affichage)
   const pageNumbers = getPageNumbers(currentPage, totalPages)

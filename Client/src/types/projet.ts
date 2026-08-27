@@ -7,6 +7,7 @@ export interface ProjetDto {
   statut: string | null
   nomProgramme: string
   nomCommune: string
+  nomPrefecture: string 
   nbrPartenaire: number
   nbrSociete: number
   idProgramme: string

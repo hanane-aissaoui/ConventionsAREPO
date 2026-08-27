@@ -23,10 +23,10 @@ public class Agent {
     private UUID idAgent;
 
     @Column(name = "nom_agent", nullable = false, length = 100)
-    private String nomAgent;
+    private String nom;
 
     @Column(name = "prenom_agent", nullable = false, length = 100)
-    private String prenomAgent;
+    private String prenom;
 
     @Column(name = "cin", nullable = false, unique = true, length = 20)
     private String cin;

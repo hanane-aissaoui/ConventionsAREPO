@@ -1,9 +1,9 @@
 import { useLocation, useNavigate, Link } from "react-router-dom"
 import { Menu, LogOut } from "lucide-react"
 import { logout } from "../utils/auth"
+import { useAppSelector } from "../store/hooks"
 import "./Topbar.css"
 
-// Traduction des segments d'URL vers un libellé lisible dans le fil d'Ariane
 const LABELS: Record<string, string> = {
   dashboard: "Tableau de bord",
   programmes: "Programmes",
@@ -17,6 +17,8 @@ const LABELS: Record<string, string> = {
   parametres: "Paramètres",
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 interface TopbarProps {
   onMenuClick: () => void
   userName?: string
@@ -28,12 +30,30 @@ export default function Topbar({ onMenuClick, userName = "Utilisateur", userRole
   const segments = location.pathname.split("/").filter(Boolean)
   const navigate = useNavigate()
 
-  // Construit le fil d'Ariane : [{ label, path }, ...]
-  const crumbs = segments.map((seg, index) => {
-    const path = "/" + segments.slice(0, index + 1).join("/")
-    const label = LABELS[seg] ?? seg
-    return { label, path }
-  })
+  const programmeDetail = useAppSelector((state) => state.programmeDetail.current)
+  const projetDetail = useAppSelector((state) => state.projets.selected)
+
+  const crumbs = segments
+    .map((seg, index) => {
+      const path = "/" + segments.slice(0, index + 1).join("/")
+      const isId = UUID_REGEX.test(seg)
+
+      let label = LABELS[seg] ?? seg
+
+      if (isId) {
+        const parentSegment = segments[index - 1]
+        if (parentSegment === "programmes" && programmeDetail?.idProgramme === seg) {
+          label = programmeDetail.objet
+        } else if (parentSegment === "projets" && projetDetail?.idProjet === seg) {
+          label = projetDetail.nom
+        } else {
+          return null // UUID pas encore chargé en mémoire -> segment masqué
+        }
+      }
+
+      return { label, path }
+    })
+    .filter((crumb): crumb is { label: string; path: string } => crumb !== null)
 
   const handleLogout = () => {
     logout()

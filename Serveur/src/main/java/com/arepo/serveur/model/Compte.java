@@ -32,7 +32,7 @@ public class Compte {
     @Column(name = "role", nullable = false, length = 20)
     private Enums.Role role;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_agent", referencedColumnName = "id_agent", nullable = false, unique = true)
     private Agent agent;
 }
