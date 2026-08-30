@@ -275,6 +275,7 @@ export default function ProgrammeDetail() {
 
   const toProjetFormValues = (p: ProjetDto): ProjetFormValues => ({
     nom: p.nom,
+    idProgramme: p.idProgramme,
     idCommune: p.idCommune,
     dateDebut: p.dateDebut ?? "",
     dateFin: p.dateFin ?? "",

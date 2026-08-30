@@ -20,11 +20,21 @@
 }
 
 .fiche-header-card {
+  position: relative;
   background: #fff;
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   margin-bottom: 16px;
+}
+
+/* Actions sur le projet lui-même — même style que la fiche Programme */
+.fiche-header-actions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
 }
 
 .fiche-badge-orange {

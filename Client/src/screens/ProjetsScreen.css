@@ -168,34 +168,41 @@
   font-size: 14px;
 }
 
+/* Doit rester identique à .row-actions .icon-btn (ProgrammeDetail.css) pour que
+   les boutons d'action aient la même apparence sur tous les écrans. */
 .projets-actions {
   display: flex;
   gap: 4px;
 }
 
 .projets-actions button {
-  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
+  background: transparent;
   border: none;
-  padding: 6px;
-  border-radius: 8px;
-  color: #6B7280;
+  border-radius: 6px;
+  color: #145A8D;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .projets-actions button:hover {
-  background: #F3F4F6;
+  background: #EAF2F8;
+  color: #0f4870;
 }
 
-.projets-delete-link {
-  color: #DC2626 !important;
+/* Sélecteur plus spécifique que `.projets-actions button` pour que le rouge
+   l'emporte sur le bleu par défaut. */
+.projets-actions button.projets-delete-link {
+  color: #DC2626;
 }
 
-.projets-delete-link:hover {
-  background: #FEF2F2 !important;
+.projets-actions button.projets-delete-link:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: #B91C1C;
 }
 
 .projets-modal-overlay {
