@@ -219,16 +219,16 @@
 
 /* ---- Tables ---- */
 /* Force l'en-tête du tableau des projets */
-.table-container--projets .projets-table thead {
+.programme-detail .table-container--projets .projets-table thead {
   background: #F8FAFC !important;
 }
 
-.table-container--projets .projets-table thead tr {
+.programme-detail .table-container--projets .projets-table thead tr {
   background: #F8FAFC !important;
   color: #6B7280 !important;
 }
 
-.table-container--projets .projets-table thead th {
+.programme-detail .table-container--projets .projets-table thead th {
   background: #F8FAFC !important;
   color: #6B7280 !important;
   padding: 12px 16px;
@@ -309,19 +309,23 @@ td {
   border: none;
   background: transparent;
   border-radius: 6px;
-  color: #6B7280;
+  color: #145A8D;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .row-actions .icon-btn:hover {
-  background: #F0F0F0;
-  color: #1a2332;
+  background: #EAF2F8;
+  color: #0f4870;
+}
+
+.row-actions .icon-btn--danger {
+  color: #DC2626;
 }
 
 .row-actions .icon-btn--danger:hover {
   background: rgba(220, 38, 38, 0.08);
-  color: #DC2626;
+  color: #B91C1C;
 }
 
 /* ---- Projets par Province ---- */
@@ -392,19 +396,19 @@ td {
   overflow-y: hidden;
 }
 
-.projets-table {
+.programme-detail .projets-table {
   width: 100%;
   min-width: 720px;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
-.projets-table thead tr {
+.programme-detail .projets-table thead tr {
   background: #F8FAFC;
   border-bottom: 1px solid #E5E7EB;
 }
 
-.projets-table th {
+.programme-detail .projets-table th {
   padding: 12px 16px;
   color: #6B7280;
   font-size: 11px;
@@ -415,27 +419,27 @@ td {
 }
 
 /* Largeurs des colonnes */
-.projets-table th:nth-child(1) { width: 32%; }
-.projets-table th:nth-child(2) { width: 25%; }
-.projets-table th:nth-child(3) { width: 21%; }
-.projets-table th:nth-child(4) { width: 13%; }
-.projets-table th:nth-child(5) { width: 9%; }
+.programme-detail .projets-table th:nth-child(1) { width: 32%; }
+.programme-detail .projets-table th:nth-child(2) { width: 25%; }
+.programme-detail .projets-table th:nth-child(3) { width: 21%; }
+.programme-detail .projets-table th:nth-child(4) { width: 13%; }
+.programme-detail .projets-table th:nth-child(5) { width: 9%; }
 
 /* Lignes */
-.projets-table tbody tr {
+.programme-detail .projets-table tbody tr {
   border-bottom: 1px solid #F0F2F4;
   transition: background 0.15s ease;
 }
 
-.projets-table tbody tr:last-child {
+.programme-detail .projets-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.projets-table tbody tr:hover {
+.programme-detail .projets-table tbody tr:hover {
   background: #F9FAFB;
 }
 
-.projets-table td {
+.programme-detail .projets-table td {
   padding: 17px 16px;
   vertical-align: middle;
   font-size: 13px;
@@ -443,7 +447,7 @@ td {
 }
 
 /* Nom du projet */
-.projets-table .cell-nom {
+.programme-detail .projets-table .cell-nom {
   font-size: 14px;
   font-weight: 600;
   color: #1F2937;
@@ -490,7 +494,7 @@ td {
 }
 
 /* Actions du tableau projets */
-.projets-table .row-actions {
+.programme-detail .projets-table .row-actions {
   display: flex;
   justify-content: flex-end;
   gap: 4px;

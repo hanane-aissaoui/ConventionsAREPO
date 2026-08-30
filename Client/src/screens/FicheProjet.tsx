@@ -5,6 +5,8 @@ import { ArrowLeft, Calendar, DollarSign, MapPin, FolderOpen, Users, Building2, 
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import {
   loadProjetDetail,
+  updateProjetThunk,
+  deleteProjetThunk,
   fetchConventionsSpecifiques,
   addConventionSpecifique,
   editConventionSpecifique,
@@ -21,11 +23,15 @@ import {
   resetDeleteMarcheStatus,
 } from '../store/projetsSlice'
 import { getAllPartenaires } from '../api/partenairesApi'
+import { getAllProgrammes } from '../api/programmesApi'
 import type { Partenaire } from '../types/partenaire'
+import type { Programme } from '../types/programme'
+import type { ProjetRequest } from '../types/projet'
 import type { ConventionSpecifique } from '../types/conventionSpecifique'
 import type { Marche, TypeAction } from '../types/marche'
 import { TYPE_ACTION_OPTIONS } from '../types/marche'
 import ConfirmDialog from '../components/ConfirmDialog'
+import ProjetModal, { type ProjetFormValues } from '../components/ProjetModal'
 import AssocierPartenaireModal, { type ConventionFormValues } from '../components/AssocierPartenaireModal'
 import AssocierMarcheModal, { type MarcheFormValues } from '../components/AssocierMarcheModal'
 import './FicheProjet.css'
@@ -104,6 +110,13 @@ export default function FicheProjet() {
   } = useAppSelector((state) => state.projets)
 
   const [partenaires, setPartenaires] = useState<Partenaire[]>([])
+  const [programmes, setProgrammes] = useState<Programme[]>([])
+
+  // Modifier / supprimer le projet lui-même
+  const [projetEditOpen, setProjetEditOpen] = useState(false)
+  const [projetDeleteOpen, setProjetDeleteOpen] = useState(false)
+  const [projetSubmitting, setProjetSubmitting] = useState(false)
+  const [projetDeleting, setProjetDeleting] = useState(false)
 
   // Associer un partenaire (ConventionSpecifique)
   const [conventionModalOpen, setConventionModalOpen] = useState(false)
@@ -127,6 +140,7 @@ export default function FicheProjet() {
 
   useEffect(() => {
     getAllPartenaires().then(setPartenaires).catch(() => {})
+    getAllProgrammes().then(setProgrammes).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -178,6 +192,45 @@ export default function FicheProjet() {
   if (!selected) return null
 
   const hasAvancement = selected.avancementPhysiqueMoyen != null || selected.avancementFinancierMoyen != null
+
+  // ─── Projet lui-même (modification / suppression) ────────────────────
+  const toProjetFormValues = (): ProjetFormValues => ({
+    nom: selected.nom,
+    idProgramme: selected.idProgramme,
+    idCommune: selected.idCommune,
+    statut: selected.statut ?? 'En cours',
+    budgetEstime: selected.budgetEstime != null ? String(selected.budgetEstime) : '',
+    dateDebut: selected.dateDebut ?? '',
+    dateFin: selected.dateFin ?? '',
+  })
+
+  const handleProjetEditSubmit = async (values: ProjetFormValues) => {
+    if (!id) return
+    const payload: ProjetRequest = {
+      nom: values.nom.trim(),
+      idProgramme: values.idProgramme,
+      idCommune: values.idCommune,
+      statut: values.statut.trim(),
+      budgetEstime: values.budgetEstime ? Number(values.budgetEstime) : null,
+      dateDebut: values.dateDebut || null,
+      dateFin: values.dateFin || null,
+    }
+    setProjetSubmitting(true)
+    const result = await dispatch(updateProjetThunk({ id, data: payload }))
+    setProjetSubmitting(false)
+    if (updateProjetThunk.fulfilled.match(result)) {
+      setProjetEditOpen(false)
+      dispatch(loadProjetDetail(id))
+    }
+  }
+
+  const handleProjetDelete = async () => {
+    if (!id) return
+    setProjetDeleting(true)
+    const result = await dispatch(deleteProjetThunk(id))
+    setProjetDeleting(false)
+    if (deleteProjetThunk.fulfilled.match(result)) navigate('/projets')
+  }
 
   // ─── Partenaires associés ────────────────────────────────────────────
   const openCreateConventionModal = () => {
@@ -288,6 +341,19 @@ export default function FicheProjet() {
       </button>
 
       <div className="fiche-header-card">
+        <div className="fiche-header-actions">
+          <button className="btn-outline" onClick={() => setProjetEditOpen(true)} aria-label="Modifier le projet">
+            <Pencil size={14} />
+          </button>
+          <button
+            className="btn-danger-outline"
+            onClick={() => setProjetDeleteOpen(true)}
+            disabled={projetDeleting}
+            aria-label="Supprimer le projet"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
         <span className="fiche-badge-orange">{selected.statut}</span>
         <h1 className="fiche-title">{selected.nom}</h1>
 
@@ -494,6 +560,26 @@ export default function FicheProjet() {
         isLoading={deleteMarcheStatus === 'loading'}
         onConfirm={handleConfirmDeleteMarche}
         onCancel={() => setDeleteMarcheTarget(null)}
+      />
+
+      <ProjetModal
+        isOpen={projetEditOpen}
+        isSubmitting={projetSubmitting}
+        mode="edit"
+        initialValues={toProjetFormValues()}
+        existingCommuneLabel={`${selected.nomCommune}${selected.nomPrefecture ? ` — ${selected.nomPrefecture}` : ''}`}
+        programmes={programmes}
+        onClose={() => setProjetEditOpen(false)}
+        onSubmit={handleProjetEditSubmit}
+      />
+
+      <ConfirmDialog
+        isOpen={projetDeleteOpen}
+        title="Supprimer le projet"
+        message={`Êtes-vous sûr de vouloir supprimer "${selected.nom}" ? Cette action est irréversible.`}
+        isLoading={projetDeleting}
+        onConfirm={handleProjetDelete}
+        onCancel={() => setProjetDeleteOpen(false)}
       />
     </div>
   )

@@ -9,6 +9,7 @@ import ProjetsScreen from "./screens/ProjetsScreen";
 import ParametresScreen from "./screens/ParametresScreen";
 import FicheProjet from "./screens/FicheProjet";
 import FichePartenaire from "./screens/FichePartenaire";
+import GestionPartenairesScreen from "./screens/GestionPartenairesScreen";
 import TerritoireScreen from "./screens/TerritoireScreen";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -83,6 +84,16 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <ParametresScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaires"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <GestionPartenairesScreen />
                 </Layout>
               </ProtectedRoute>
             }

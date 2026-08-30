@@ -49,8 +49,8 @@ export default function FichePartenaire() {
 
   return (
     <div className="fiche-container">
-      <button className="fiche-back-btn" onClick={() => navigate('/parametres')}>
-        <ArrowLeft size={14} /> Retour aux Paramètres
+      <button className="fiche-back-btn" onClick={() => navigate('/partenaires')}>
+        <ArrowLeft size={14} /> Retour aux Partenaires
       </button>
 
       <div className="fiche-header-card">

@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Edit2, Trash2, Plus } from 'lucide-react'
+import { Eye, Pencil, Trash2, Plus } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { loadProjets, createProjetThunk, updateProjetThunk, deleteProjetThunk } from '../store/projetsSlice'
+import { getAllProgrammes } from '../api/programmesApi'
 import type { ProjetDto, ProjetRequest } from '../types/projet'
+import type { Programme } from '../types/programme'
 import Pagination from '../components/Pagination'
+import ConfirmDialog from '../components/ConfirmDialog'
+import ProjetModal, { type ProjetFormValues } from '../components/ProjetModal'
 import './ProjetsScreen.css'
-
-// Doit rester synchronisé avec les statuts proposés dans ProjetModal (ajout de
-// projet depuis la fiche Programme).
-const STATUTS = ['Crée', 'En cours', 'Terminé']
-
-const emptyForm = (): ProjetRequest => ({
-  nom: '', dateDebut: '', dateFin: '', budgetEstime: null, statut: STATUTS[1],
-  idProgramme: '', idCommune: '',
-})
 
 export default function ProjetsScreen() {
   const navigate = useNavigate()
@@ -27,12 +22,19 @@ export default function ProjetsScreen() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<ProjetDto | null>(null)
-  const [form, setForm] = useState<ProjetRequest>(emptyForm())
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<ProjetDto | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const [programmes, setProgrammes] = useState<Programme[]>([])
 
   useEffect(() => {
     dispatch(loadProjets({ page: currentPage, size: 10, search: searchTerm }))
   }, [dispatch, currentPage, searchTerm])
+
+  useEffect(() => {
+    getAllProgrammes().then(setProgrammes).catch(() => {})
+  }, [])
 
   const refresh = () => dispatch(loadProjets({ page: currentPage, size: 10, search: searchTerm }))
 
@@ -45,31 +47,48 @@ export default function ProjetsScreen() {
     if (e.key === 'Enter') handleSearch()
   }
 
-  const openCreate = () => { setEditing(null); setForm(emptyForm()); setModalOpen(true) }
-  const openEdit = (p: ProjetDto) => {
-    setEditing(p)
-    setForm({
-      nom: p.nom, dateDebut: p.dateDebut ?? '', dateFin: p.dateFin ?? '',
-      budgetEstime: p.budgetEstime, statut: p.statut ?? '',
-      idProgramme: p.idProgramme, idCommune: p.idCommune,
-    })
-    setModalOpen(true)
-  }
+  const openCreate = () => { setEditing(null); setModalOpen(true) }
+  const openEdit = (p: ProjetDto) => { setEditing(p); setModalOpen(true) }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // ProjetDto (backend) → valeurs de formulaire (strings)
+  const toFormValues = (p: ProjetDto): ProjetFormValues => ({
+    nom: p.nom,
+    idProgramme: p.idProgramme,
+    idCommune: p.idCommune,
+    statut: p.statut ?? 'En cours',
+    budgetEstime: p.budgetEstime != null ? String(p.budgetEstime) : '',
+    dateDebut: p.dateDebut ?? '',
+    dateFin: p.dateFin ?? '',
+  })
+
+  const handleModalSubmit = async (values: ProjetFormValues) => {
+    const payload: ProjetRequest = {
+      nom: values.nom.trim(),
+      idProgramme: values.idProgramme,
+      idCommune: values.idCommune,
+      statut: values.statut.trim(),
+      budgetEstime: values.budgetEstime ? Number(values.budgetEstime) : null,
+      dateDebut: values.dateDebut || null,
+      dateFin: values.dateFin || null,
+    }
+
+    setIsSubmitting(true)
     if (editing) {
-      const result = await dispatch(updateProjetThunk({ id: editing.idProjet, data: form }))
-      if (updateProjetThunk.fulfilled.match(result)) { setModalOpen(false); refresh() }
+      const result = await dispatch(updateProjetThunk({ id: editing.idProjet, data: payload }))
+      setIsSubmitting(false)
+      if (updateProjetThunk.fulfilled.match(result)) { setModalOpen(false); setEditing(null); refresh() }
     } else {
-      const result = await dispatch(createProjetThunk(form))
+      const result = await dispatch(createProjetThunk(payload))
+      setIsSubmitting(false)
       if (createProjetThunk.fulfilled.match(result)) { setModalOpen(false); refresh() }
     }
   }
 
   const confirmDelete = async () => {
     if (!deleteTarget) return
-    const result = await dispatch(deleteProjetThunk(deleteTarget))
+    setIsDeleting(true)
+    const result = await dispatch(deleteProjetThunk(deleteTarget.idProjet))
+    setIsDeleting(false)
     if (deleteProjetThunk.fulfilled.match(result)) refresh()
     setDeleteTarget(null)
   }
@@ -128,9 +147,9 @@ export default function ProjetsScreen() {
         <Eye size={15} />
       </button>
       <button title="Éditer" onClick={() => openEdit(p)}>
-        <Edit2 size={14} />
+        <Pencil size={14} />
       </button>
-      <button title="Supprimer" onClick={() => setDeleteTarget(p.idProjet)} className="projets-delete-link">
+      <button title="Supprimer" onClick={() => setDeleteTarget(p)} className="projets-delete-link">
         <Trash2 size={14} />
       </button>
     </td>
@@ -142,56 +161,29 @@ export default function ProjetsScreen() {
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setCurrentPage} />
 
-      {modalOpen && (
-        <div className="projets-modal-overlay" onClick={() => setModalOpen(false)}>
-          <div className="projets-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing ? 'Modifier le Projet' : 'Nouveau Projet'}</h2>
-            <form onSubmit={handleSubmit} className="projets-form">
-              <label>Nom
-                <input value={form.nom} onChange={(e) => setForm((f) => ({ ...f, nom: e.target.value }))} required />
-              </label>
-              <label>ID Programme (UUID — collé en attendant le menu déroulant)
-                <input value={form.idProgramme} onChange={(e) => setForm((f) => ({ ...f, idProgramme: e.target.value }))} required />
-              </label>
-              <label>ID Commune (UUID — collé en attendant le menu déroulant)
-                <input value={form.idCommune} onChange={(e) => setForm((f) => ({ ...f, idCommune: e.target.value }))} required />
-              </label>
-              <label>Statut
-                <select value={form.statut ?? ''} onChange={(e) => setForm((f) => ({ ...f, statut: e.target.value }))}>
-                  {STATUTS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </label>
-              <label>Budget estimé
-                <input type="number" value={form.budgetEstime ?? ''} onChange={(e) => setForm((f) => ({ ...f, budgetEstime: e.target.value ? Number(e.target.value) : null }))} />
-              </label>
-              <label>Date début
-                <input type="date" value={form.dateDebut ?? ''} onChange={(e) => setForm((f) => ({ ...f, dateDebut: e.target.value }))} />
-              </label>
-              <label>Date fin
-                <input type="date" value={form.dateFin ?? ''} onChange={(e) => setForm((f) => ({ ...f, dateFin: e.target.value }))} />
-              </label>
-              <div className="projets-modal-actions">
-                <button type="button" onClick={() => setModalOpen(false)}>Annuler</button>
-                <button type="submit">{editing ? 'Enregistrer' : 'Créer'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ProjetModal
+        isOpen={modalOpen}
+        isSubmitting={isSubmitting}
+        mode={editing ? 'edit' : 'create'}
+        initialValues={editing ? toFormValues(editing) : undefined}
+        existingCommuneLabel={
+          editing
+            ? `${editing.nomCommune}${editing.nomPrefecture ? ` — ${editing.nomPrefecture}` : ''}`
+            : undefined
+        }
+        programmes={programmes}
+        onClose={() => { setModalOpen(false); setEditing(null) }}
+        onSubmit={handleModalSubmit}
+      />
 
-      {deleteTarget && (
-        <div className="projets-modal-overlay" onClick={() => setDeleteTarget(null)}>
-          <div className="projets-modal" onClick={(e) => e.stopPropagation()}>
-            <p>Supprimer ce projet ?</p>
-            <div className="projets-modal-actions">
-              <button onClick={() => setDeleteTarget(null)}>Annuler</button>
-              <button onClick={confirmDelete} className="projets-delete-link">Supprimer</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        title="Supprimer le projet"
+        message={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.nom ?? ''}" ? Cette action est irréversible.`}
+        isLoading={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

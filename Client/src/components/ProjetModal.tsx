@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
 import { fetchHierarchieTerritoriale, type TerritoireNode } from "../api/territoireApi"
+import type { Programme } from "../types/programme"
 import "./Modal.css"
 
 export interface ProjetFormValues {
   nom: string
+  idProgramme: string
   idCommune: string
   dateDebut: string
   dateFin: string
@@ -18,6 +20,12 @@ interface ProjetModalProps {
   initialValues?: ProjetFormValues
   /** Nom de la commune actuelle (utile si elle n'est plus renvoyée par fetchHierarchieTerritoriale) */
   existingCommuneLabel?: string
+  /**
+   * Liste des programmes pour le menu déroulant. Fournie depuis l'écran Projets
+   * (projet non rattaché a priori). Omise depuis la fiche Programme, où le
+   * programme est déjà connu : le menu est alors masqué.
+   */
+  programmes?: Programme[]
   onClose: () => void
   onSubmit: (values: ProjetFormValues) => void
 }
@@ -26,6 +34,7 @@ const STATUTS = ["Crée","En cours","Terminé"]
 
 const emptyForm: ProjetFormValues = {
   nom: "",
+  idProgramme: "",
   idCommune: "",
   dateDebut: "",
   dateFin: "",
@@ -58,6 +67,7 @@ export default function ProjetModal({
   mode,
   initialValues,
   existingCommuneLabel,
+  programmes,
   onClose,
   onSubmit,
 }: ProjetModalProps) {
@@ -94,6 +104,7 @@ export default function ProjetModal({
   const validate = (): boolean => {
     const errs: Partial<Record<keyof ProjetFormValues, string>> = {}
     if (!form.nom.trim()) errs.nom = "Le nom du projet est requis"
+    if (programmes && !form.idProgramme) errs.idProgramme = "Sélectionnez un programme"
     if (!form.idCommune) errs.idCommune = "Sélectionnez une commune"
     if (!form.dateDebut) errs.dateDebut = "La date de début est requise"
     setErrors(errs)
@@ -125,6 +136,24 @@ export default function ProjetModal({
             />
             {errors.nom && <span className="field-error">{errors.nom}</span>}
           </div>
+
+          {programmes && (
+            <div className="form-field">
+              <label>Programme <span className="required">*</span></label>
+              <select
+                value={form.idProgramme}
+                onChange={(e) => sf("idProgramme", e.target.value)}
+              >
+                <option value="">-- Sélectionner --</option>
+                {[...programmes]
+                  .sort((a, b) => a.objet.localeCompare(b.objet, "fr"))
+                  .map((p) => (
+                    <option key={p.idProgramme} value={p.idProgramme}>{p.objet}</option>
+                  ))}
+              </select>
+              {errors.idProgramme && <span className="field-error">{errors.idProgramme}</span>}
+            </div>
+          )}
 
           <div className="form-field">
             <label>Commune <span className="required">*</span></label>

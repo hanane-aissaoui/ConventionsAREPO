@@ -64,11 +64,41 @@ export default function DashboardScreen() {
     c.etatConvention?.toUpperCase().includes("SIGN")
   ).length
 
-  const avancementData = marches.map((m) => ({
-    name: (m.attributaireRealisateur || m.typeAction).slice(0, 12),
-    physique: m.avancementPhysique ?? 0,
-    financier: m.avancementFinancier ?? 0,
-  }))
+  const TOP_PARTENAIRES = 5
+
+  // Contribution (montant engagé) vs Débloqué, agrégés par partenaire sur
+  // l'ensemble de ses conventions (cadre + spécifiques).
+  const contribToutes = partenaires
+    .map((p) => {
+      const conventions = [
+        ...conventionsCadre.filter((c) => c.idPartenaire === p.idPartenaire),
+        ...conventionsSpecifiques.filter((c) => c.idPartenaire === p.idPartenaire),
+      ]
+      return {
+        name: p.nom.length > 12 ? `${p.nom.slice(0, 12)}…` : p.nom,
+        contribution: conventions.reduce((s, c) => s + (c.montantContribution ?? 0), 0),
+        debloque: conventions.reduce((s, c) => s + (c.montantDebloque ?? 0), 0),
+      }
+    })
+    .filter((d) => d.contribution > 0 || d.debloque > 0)
+    .sort((a, b) => b.contribution - a.contribution)
+
+  // On n'affiche que les plus gros contributeurs ; au-delà, le reste est
+  // regroupé dans une barre "Autres" pour garder une largeur maîtrisée.
+  const contribParPartenaire =
+    contribToutes.length > TOP_PARTENAIRES + 1
+      ? [
+          ...contribToutes.slice(0, TOP_PARTENAIRES),
+          contribToutes.slice(TOP_PARTENAIRES).reduce(
+            (acc, d) => ({
+              name: "Autres",
+              contribution: acc.contribution + d.contribution,
+              debloque: acc.debloque + d.debloque,
+            }),
+            { name: "Autres", contribution: 0, debloque: 0 }
+          ),
+        ]
+      : contribToutes
 
   const statutsCount: Record<string, number> = {}
   projets.forEach((p) => {
@@ -138,33 +168,38 @@ export default function DashboardScreen() {
           icon={Users}
           color="#6B7280"
           sub="total"
-          onClick={() => navigate("/parametres")}
+          onClick={() => navigate("/partenaires")}
         />
       </div>
 
       <div className="dashboard-charts-row">
         <div className="dashboard-chart-card dashboard-chart-card--wide">
-          <p className="dashboard-chart-card__title">Avancement par Marché</p>
-          {avancementData.length === 0 ? (
+          <p className="dashboard-chart-card__title">Contribution par Partenaire</p>
+          {contribParPartenaire.length === 0 ? (
             <p className="dashboard-chart-card__empty">Aucune donnée pour l'instant.</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={avancementData} barGap={2} barCategoryGap="30%">
+              <BarChart data={contribParPartenaire} barGap={2} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} unit="%" domain={[0, 100]} />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#9CA3AF" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${(v / 1e6).toFixed(1)}M`}
+                />
                 <Tooltip
-                  formatter={(v, name) => [`${v}%`, name === "physique" ? "Physique" : "Financier"]}
+                  formatter={(v, name) => [formatMd(Number(v)), name === "contribution" ? "Contribution" : "Débloqué"]}
                   contentStyle={{ borderRadius: 10, border: "1px solid #E3E2E2", fontSize: 12 }}
                 />
                 <Legend
-                  formatter={(v: string) => (v === "physique" ? "Avancement Physique" : "Avancement Financier")}
+                  formatter={(v: string) => (v === "contribution" ? "Contribution" : "Débloqué")}
                   iconType="circle"
                   iconSize={8}
                   wrapperStyle={{ fontSize: 12 }}
                 />
-                <Bar dataKey="physique" fill="#4CAF50" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="financier" fill="#145A8D" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="contribution" fill="#145A8D" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="debloque" fill="#4CAF50" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
