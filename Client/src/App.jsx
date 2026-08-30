@@ -2,11 +2,13 @@ import LoginScreen from "./screens/LoginScreen"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
+import DashboardScreen from "./screens/DashboardScreen";
 import ProgrammesPage from "./screens/ProgrammesScreen";
 import ProgrammeDetail from "./screens/ProgrammeDetail";
 import ProjetsScreen from "./screens/ProjetsScreen";
 import ParametresScreen from "./screens/ParametresScreen";
 import FicheProjet from "./screens/FicheProjet";
+import FichePartenaire from "./screens/FichePartenaire";
 import TerritoireScreen from "./screens/TerritoireScreen";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -23,6 +25,16 @@ export default function App() {
               <PublicOnlyRoute>
                 <LoginScreen />
               </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <DashboardScreen />
+                </Layout>
+              </ProtectedRoute>
             }
           />
           <Route
@@ -71,6 +83,16 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <ParametresScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaires/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <FichePartenaire />
                 </Layout>
               </ProtectedRoute>
             }

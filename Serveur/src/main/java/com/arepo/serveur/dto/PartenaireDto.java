@@ -14,13 +14,15 @@ import lombok.AllArgsConstructor;
 public class PartenaireDto {
     public UUID idPartenaire;
     public String nom;
-    public String code;
+    public String telephone;
+    public String email;
 
     public static PartenaireDto fromEntity(Partenaire p) {
         PartenaireDto dto = new PartenaireDto();
         dto.idPartenaire = p.getIdPartenaire();
         dto.nom = p.getNom();
-        dto.code = p.getCode();
+        dto.telephone = p.getTelephone();
+        dto.email = p.getEmail();
         return dto;
     }
 

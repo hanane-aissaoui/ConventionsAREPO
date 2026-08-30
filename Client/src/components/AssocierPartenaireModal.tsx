@@ -87,7 +87,7 @@ export default function AssocierPartenaireModal({
                 .sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
                 .map((p) => (
                   <option key={p.idPartenaire} value={p.idPartenaire}>
-                    {p.code} — {p.nom}
+                    {p.nom}
                   </option>
                 ))}
             </select>

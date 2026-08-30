@@ -47,7 +47,8 @@ public class PartenaireService {
 
     private void applyRequest(Partenaire partenaire, PartenaireDto request) {
         partenaire.setNom(request.getNom());
-        partenaire.setCode(request.getCode());
+        partenaire.setTelephone(request.getTelephone());
+        partenaire.setEmail(request.getEmail());
     }
 
     private Partenaire getOrThrow(UUID id) {

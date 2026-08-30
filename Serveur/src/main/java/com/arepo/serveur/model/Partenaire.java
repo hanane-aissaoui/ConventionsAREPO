@@ -26,8 +26,11 @@ public class Partenaire {
     @Column(name = "nom", nullable = false, length = 200)
     private String nom;
 
-    @Column(name = "code", unique = true, length = 50)
-    private String code;
+    @Column(name = "telephone", length = 30)
+    private String telephone;
+
+    @Column(name = "email", length = 200)
+    private String email;
 
     @OneToMany(mappedBy = "partenaire")
     private List<ConventionCadre> conventionsCadre = new ArrayList<>();

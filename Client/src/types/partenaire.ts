@@ -1,5 +1,12 @@
 export interface Partenaire {
   idPartenaire: string
   nom: string
-  code: string
+  telephone: string | null
+  email: string | null
+}
+
+export interface PartenaireCreateRequest {
+  nom: string
+  telephone: string
+  email: string
 }
