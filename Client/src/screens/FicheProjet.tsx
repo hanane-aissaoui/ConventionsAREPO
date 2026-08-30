@@ -362,7 +362,7 @@ export default function FicheProjet() {
             className="fiche-info-item fiche-info-clickable"
             onClick={() => navigate(`/programmes/${selected.idProgramme}`)}
           >
-            <FolderOpen size={16} className="fiche-icon" />
+            <FolderOpen size={16} className="fiche-icon" style={{ color: '#145A8D' }} />
             <div className="fiche-info-text">
               <p className="fiche-label">Programme</p>
               <p className="fiche-value">{selected.nomProgramme}</p>
@@ -371,7 +371,7 @@ export default function FicheProjet() {
           </button>
 
           <div className="fiche-info-item">
-            <MapPin size={16} className="fiche-icon" />
+            <MapPin size={16} className="fiche-icon" style={{ color: '#C64A11' }} />
             <div>
               <p className="fiche-label">Commune</p>
               <p className="fiche-value">{selected.nomCommune}</p>
@@ -379,7 +379,7 @@ export default function FicheProjet() {
           </div>
 
           <div className="fiche-info-item">
-            <Calendar size={16} className="fiche-icon" />
+            <Calendar size={16} className="fiche-icon" style={{ color: '#0E630E' }} />
             <div>
               <p className="fiche-label">Période</p>
               <p className="fiche-value">{selected.dateDebut ?? '—'} → {selected.dateFin ?? '—'}</p>

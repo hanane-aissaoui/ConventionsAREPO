@@ -9,9 +9,9 @@
   background: none;
   border: none;
   color: #6B7280;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   padding: 0;
 }
 
@@ -23,9 +23,9 @@
   position: relative;
   background: #fff;
   border-radius: 14px;
-  padding: 24px;
+  padding: 26px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 /* Actions sur le projet lui-même — même style que la fiche Programme */
@@ -52,7 +52,7 @@
   font-size: 22px;
   font-weight: 700;
   color: #1a2332;
-  margin: 0 0 20px;
+  margin: 0;
 }
 
 .fiche-info-grid {

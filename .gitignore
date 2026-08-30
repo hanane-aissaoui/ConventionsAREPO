@@ -1,1 +1,4 @@
 .idea/
+
+# Config locale avec identifiants reels (DB, secrets) - ne jamais commiter
+Serveur/src/main/resources/application.properties
