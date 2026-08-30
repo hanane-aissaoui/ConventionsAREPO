@@ -16,10 +16,17 @@ import java.util.UUID;
 public interface ProjetRepository extends JpaRepository<Projet, UUID> {
     List<Projet> findByProgramme_IdProgramme(UUID idProgramme);
 
+    // COALESCE : les projets jamais modifies (dateModification encore nulle,
+    // ex. crees avant l'ajout de cette colonne) retombent sur leur date de
+    // creation, plutot que de remonter en tete de liste a cause d'un NULL.
+    @Query("SELECT p FROM Projet p ORDER BY COALESCE(p.dateModification, p.dateCreation) DESC")
+    Page<Projet> findAllOrderByRecent(Pageable pageable);
+
     @Query("SELECT p FROM Projet p WHERE " +
             "LOWER(p.nom) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(p.programme.objet) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(p.commune.prefecture.nom) LIKE LOWER(CONCAT('%', :search, '%'))")
+            "LOWER(p.commune.prefecture.nom) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "ORDER BY COALESCE(p.dateModification, p.dateCreation) DESC")
     Page<Projet> search(@Param("search") String search, Pageable pageable);
     List<Projet> findByProgrammeIdProgramme(UUID idProgramme);
 }

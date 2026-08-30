@@ -7,6 +7,7 @@ interface ConfirmDialogProps {
   message: string
   confirmLabel?: string
   isLoading?: boolean
+  error?: string | null
   onConfirm: () => void
   onCancel: () => void
 }
@@ -17,6 +18,7 @@ export default function ConfirmDialog({
   message,
   confirmLabel = "Supprimer",
   isLoading = false,
+  error = null,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -30,6 +32,8 @@ export default function ConfirmDialog({
         </div>
         <h3 className="confirm-title">{title}</h3>
         <p className="confirm-message">{message}</p>
+
+        {error && <p className="confirm-error">{error}</p>}
 
         <div className="confirm-actions">
           <button className="btn-secondary" onClick={onCancel} disabled={isLoading}>

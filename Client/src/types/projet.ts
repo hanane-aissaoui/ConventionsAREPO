@@ -12,6 +12,8 @@ export interface ProjetDto {
   nbrSociete: number
   idProgramme: string
   idCommune: string
+  dateCreation?: string | null
+  dateModification?: string | null
   marches?: string[]
   partenaires?: string[]
   avancementPhysiqueMoyen?: number | null
@@ -20,7 +22,16 @@ export interface ProjetDto {
 
 export type ProjetRequest = Omit<
   ProjetDto,
-  "idProjet" | "nomProgramme" | "nomCommune" | "nbrPartenaire" | "nbrSociete" | "marches" | "partenaires"
+  | "idProjet"
+  | "nomProgramme"
+  | "nomCommune"
+  | "nomPrefecture"
+  | "nbrPartenaire"
+  | "nbrSociete"
+  | "marches"
+  | "partenaires"
+  | "dateCreation"
+  | "dateModification"
 >
 
 export interface PageResponse<T> {

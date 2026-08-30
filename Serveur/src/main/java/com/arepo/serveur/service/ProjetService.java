@@ -31,14 +31,11 @@ public class ProjetService {
     private CommuneRepository communeRepository;
 
     public PageResponse<ProjetDto> findPage(String search, Pageable pageable) {
-        Pageable sortedPageable = PageRequest.of(
-                pageable.getPageNumber(), pageable.getPageSize(),
-                Sort.by(Sort.Direction.DESC, "dateCreation")
-        );
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
 
         Page<Projet> result = (search == null || search.isBlank())
-                ? projetRepository.findAll(sortedPageable)
-                : projetRepository.search(search, sortedPageable);
+                ? projetRepository.findAllOrderByRecent(unsortedPageable)
+                : projetRepository.search(search, unsortedPageable);
         return PageResponse.from(result.map(ProjetDto::fromEntity));
     }
 

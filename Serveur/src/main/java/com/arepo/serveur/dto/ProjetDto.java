@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +24,8 @@ public class ProjetDto {
     public Integer nbrSociete;
     public UUID idProgramme;
     public UUID idCommune;
+    public LocalDateTime dateCreation;
+    public LocalDateTime dateModification;
 
     // Province/Préfecture de la commune du projet (pour le regroupement "Projets par Province")
     public UUID idPrefecture;
@@ -49,8 +52,26 @@ public class ProjetDto {
         dto.nomCommune = p.getCommune().getNom();
         dto.idPrefecture = p.getCommune().getPrefecture().getIdPrefecture();
         dto.nomPrefecture = p.getCommune().getPrefecture().getNom();
+        dto.dateCreation = p.getDateCreation();
+        dto.dateModification = p.getDateModification();
         dto.nbrPartenaire = p.getConventionsSpecifiques().size();
         dto.nbrSociete = p.getMarches().size();
+        return dto;
+    }
+
+    // Calcul des moyennes d'avancement + listes détaillées : uniquement pour la
+    // page de détail, pour ne pas alourdir les requêtes de liste paginées.
+    public static ProjetDto fromEntityDetail(Projet p) {
+        ProjetDto dto = fromEntity(p);
+
+        dto.marches = p.getMarches().stream()
+                .map(m -> (m.getAttributaireRealisateur() == null ? "Société non renseignée" : m.getAttributaireRealisateur())
+                        + " (" + m.getTypeAction() + ")")
+                .toList();
+
+        dto.partenaires = p.getConventionsSpecifiques().stream()
+                .map(cs -> cs.getPartenaire().getNom())
+                .toList();
 
         dto.avancementPhysiqueMoyen = p.getMarches().isEmpty()
                 ? null
@@ -64,20 +85,6 @@ public class ProjetDto {
                 .mapToInt(m -> m.getAvancementFinancier() == null ? 0 : m.getAvancementFinancier())
                 .average()
                 .orElse(0);
-        return dto;
-    }
-
-    public static ProjetDto fromEntityDetail(Projet p) {
-        ProjetDto dto = fromEntity(p);
-
-        dto.marches = p.getMarches().stream()
-                .map(m -> (m.getAttributaireRealisateur() == null ? "Société non renseignée" : m.getAttributaireRealisateur())
-                        + " (" + m.getTypeAction() + ")")
-                .toList();
-
-        dto.partenaires = p.getConventionsSpecifiques().stream()
-                .map(cs -> cs.getPartenaire().getNom())
-                .toList();
 
         return dto;
     }

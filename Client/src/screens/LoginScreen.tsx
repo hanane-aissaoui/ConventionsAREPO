@@ -23,7 +23,7 @@ export default function LoginScreen() {
     try {
       const result = await login(email, password)
       localStorage.setItem("token", result.token)
-      navigate("/programmes")
+      navigate("/dashboard")
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message)

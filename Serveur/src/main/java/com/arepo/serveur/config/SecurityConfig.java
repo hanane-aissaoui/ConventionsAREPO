@@ -1,5 +1,7 @@
 package com.arepo.serveur.config;
 
+import com.arepo.serveur.exception.RestAccessDeniedHandler;
+import com.arepo.serveur.exception.RestAuthenticationEntryPoint;
 import com.arepo.serveur.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,11 +25,17 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final DaoAuthenticationProvider authenticationProvider;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          DaoAuthenticationProvider authenticationProvider) {
+                          DaoAuthenticationProvider authenticationProvider,
+                          RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+                          RestAccessDeniedHandler restAccessDeniedHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationProvider = authenticationProvider;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+        this.restAccessDeniedHandler = restAccessDeniedHandler;
     }
 
     @Bean
@@ -35,18 +43,32 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable());
         http.cors(Customizer.withDefaults());
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/login").permitAll());
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll());
 
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/swagger-ui.html").permitAll());
 
         http.authorizeHttpRequests((requests) -> {requests.anyRequest().authenticated();});
+        http.exceptionHandling(handler -> handler
+                .authenticationEntryPoint(restAuthenticationEntryPoint)
+                .accessDeniedHandler(restAccessDeniedHandler));
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authenticationProvider(authenticationProvider);
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

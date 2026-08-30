@@ -45,6 +45,17 @@
   margin-bottom: 22px;
 }
 
+.confirm-error {
+  font-size: 12.5px;
+  color: #DC2626;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+
 .confirm-actions {
   display: flex;
   gap: 10px;

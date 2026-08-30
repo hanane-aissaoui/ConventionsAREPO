@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @CrossOrigin(originPatterns = "http://localhost:*", allowCredentials = "true")
@@ -26,6 +27,12 @@ public class ProgrammeController {
             @RequestParam(required = false) String objet) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dateUpdate").descending());
         return programmeService.findAll(pageable, objet);
+    }
+
+    // Liste complète, sans pagination : pour les <select> (ex. formulaire projet).
+    @GetMapping("/all")
+    public List<ProgrammeDto> getAllUnpaged() {
+        return programmeService.findAllList();
     }
 
     @GetMapping("/{id}")

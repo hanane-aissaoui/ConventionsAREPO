@@ -8,7 +8,7 @@ interface PublicOnlyRouteProps {
 // Empêche d'accéder à la page de login si un JWT valide existe déjà
 export default function PublicOnlyRoute({ children }: PublicOnlyRouteProps) {
   if (isTokenValid()) {
-    return <Navigate to="/programmes" replace />
+    return <Navigate to="/dashboard" replace />
   }
   return <>{children}</>
 }

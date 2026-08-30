@@ -1,6 +1,12 @@
 import axiosClient from "./axiosClient"
 import type { ConventionCadre, ConventionCadreCreateRequest } from "../types/conventionCadre"
 
+// Toutes les conventions cadre, tous programmes confondus : pour le dashboard.
+export async function getAllConventionsCadre(): Promise<ConventionCadre[]> {
+  const response = await axiosClient.get<ConventionCadre[]>("/conventions-cadre")
+  return response.data
+}
+
 export async function getConventionsCadreByProgramme(idProgramme: string): Promise<ConventionCadre[]> {
   const response = await axiosClient.get<ConventionCadre[]>(`/conventions-cadre/programme/${idProgramme}`)
   return response.data

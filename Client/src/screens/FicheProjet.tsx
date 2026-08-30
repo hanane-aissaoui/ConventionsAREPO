@@ -1,14 +1,53 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
-import { ArrowLeft, Calendar, DollarSign, MapPin, FolderOpen, Users, Building2, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Calendar, DollarSign, MapPin, FolderOpen, Users, Building2, ChevronRight, Pencil, Trash2, Plus } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { loadProjetDetail } from '../store/projetsSlice'
+import {
+  loadProjetDetail,
+  fetchConventionsSpecifiques,
+  addConventionSpecifique,
+  editConventionSpecifique,
+  removeConventionSpecifique,
+  resetAddConventionSpecifiqueStatus,
+  resetEditConventionSpecifiqueStatus,
+  resetDeleteConventionSpecifiqueStatus,
+  fetchMarches,
+  addMarche,
+  editMarche,
+  removeMarche,
+  resetAddMarcheStatus,
+  resetEditMarcheStatus,
+  resetDeleteMarcheStatus,
+} from '../store/projetsSlice'
+import { getAllPartenaires } from '../api/partenairesApi'
+import type { Partenaire } from '../types/partenaire'
+import type { ConventionSpecifique } from '../types/conventionSpecifique'
+import type { Marche, TypeAction } from '../types/marche'
+import { TYPE_ACTION_OPTIONS } from '../types/marche'
+import ConfirmDialog from '../components/ConfirmDialog'
+import AssocierPartenaireModal, { type ConventionFormValues } from '../components/AssocierPartenaireModal'
+import AssocierMarcheModal, { type MarcheFormValues } from '../components/AssocierMarcheModal'
 import './FicheProjet.css'
+import './ProgrammeDetail.css'
 
 function formatBudget(v: number | null) {
   if (v == null) return '—'
   return new Intl.NumberFormat('fr-MA', { maximumFractionDigits: 0 }).format(v) + ' DH'
+}
+
+function formatMontant(montant: number | null): string {
+  if (montant == null) return '—'
+  return `${montant.toLocaleString('fr-FR')} MAD`
+}
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '—'
+  return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function typeActionLabel(typeAction: string): string {
+  return TYPE_ACTION_OPTIONS.find((o) => o.value === typeAction)?.label ?? typeAction
 }
 
 // Un donut réutilisable pour Physique ET Financier, seule la couleur change.
@@ -53,15 +92,194 @@ export default function FicheProjet() {
   const dispatch = useAppDispatch()
   const { selected, detailLoading, detailError } = useAppSelector((state) => state.projets)
 
+  const {
+    conventionsSpecifiques,
+    addConventionSpecifiqueStatus,
+    editConventionSpecifiqueStatus,
+    deleteConventionSpecifiqueStatus,
+    marches,
+    addMarcheStatus,
+    editMarcheStatus,
+    deleteMarcheStatus,
+  } = useAppSelector((state) => state.projets)
+
+  const [partenaires, setPartenaires] = useState<Partenaire[]>([])
+
+  // Associer un partenaire (ConventionSpecifique)
+  const [conventionModalOpen, setConventionModalOpen] = useState(false)
+  const [conventionModalMode, setConventionModalMode] = useState<'create' | 'edit'>('create')
+  const [editingConvention, setEditingConvention] = useState<ConventionSpecifique | null>(null)
+  const [deleteConventionTarget, setDeleteConventionTarget] = useState<ConventionSpecifique | null>(null)
+
+  // Ajouter une société / un marché
+  const [marcheModalOpen, setMarcheModalOpen] = useState(false)
+  const [marcheModalMode, setMarcheModalMode] = useState<'create' | 'edit'>('create')
+  const [editingMarche, setEditingMarche] = useState<Marche | null>(null)
+  const [deleteMarcheTarget, setDeleteMarcheTarget] = useState<Marche | null>(null)
+
   useEffect(() => {
-    if (id) dispatch(loadProjetDetail(id))
+    if (id) {
+      dispatch(loadProjetDetail(id))
+      dispatch(fetchConventionsSpecifiques(id))
+      dispatch(fetchMarches(id))
+    }
   }, [dispatch, id])
+
+  useEffect(() => {
+    getAllPartenaires().then(setPartenaires).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (addConventionSpecifiqueStatus === 'succeeded') {
+      setConventionModalOpen(false)
+      dispatch(resetAddConventionSpecifiqueStatus())
+    }
+  }, [addConventionSpecifiqueStatus, dispatch])
+
+  useEffect(() => {
+    if (editConventionSpecifiqueStatus === 'succeeded') {
+      setConventionModalOpen(false)
+      setEditingConvention(null)
+      dispatch(resetEditConventionSpecifiqueStatus())
+    }
+  }, [editConventionSpecifiqueStatus, dispatch])
+
+  useEffect(() => {
+    if (deleteConventionSpecifiqueStatus === 'succeeded') {
+      setDeleteConventionTarget(null)
+      dispatch(resetDeleteConventionSpecifiqueStatus())
+    }
+  }, [deleteConventionSpecifiqueStatus, dispatch])
+
+  useEffect(() => {
+    if (addMarcheStatus === 'succeeded') {
+      setMarcheModalOpen(false)
+      dispatch(resetAddMarcheStatus())
+    }
+  }, [addMarcheStatus, dispatch])
+
+  useEffect(() => {
+    if (editMarcheStatus === 'succeeded') {
+      setMarcheModalOpen(false)
+      setEditingMarche(null)
+      dispatch(resetEditMarcheStatus())
+    }
+  }, [editMarcheStatus, dispatch])
+
+  useEffect(() => {
+    if (deleteMarcheStatus === 'succeeded') {
+      setDeleteMarcheTarget(null)
+      dispatch(resetDeleteMarcheStatus())
+    }
+  }, [deleteMarcheStatus, dispatch])
 
   if (detailLoading) return <p className="fiche-loading">Chargement...</p>
   if (detailError) return <p className="fiche-error">{detailError}</p>
   if (!selected) return null
 
   const hasAvancement = selected.avancementPhysiqueMoyen != null || selected.avancementFinancierMoyen != null
+
+  // ─── Partenaires associés ────────────────────────────────────────────
+  const openCreateConventionModal = () => {
+    setConventionModalMode('create')
+    setEditingConvention(null)
+    setConventionModalOpen(true)
+  }
+
+  const openEditConventionModal = (convention: ConventionSpecifique) => {
+    setConventionModalMode('edit')
+    setEditingConvention(convention)
+    setConventionModalOpen(true)
+  }
+
+  const toConventionFormValues = (c: ConventionSpecifique): ConventionFormValues => ({
+    idPartenaire: c.idPartenaire,
+    etatConvention: c.etatConvention,
+    montantContribution: c.montantContribution != null ? String(c.montantContribution) : '',
+    montantDebloque: c.montantDebloque != null ? String(c.montantDebloque) : '',
+    dateParticipation: c.dateParticipation ?? '',
+  })
+
+  const handleConventionSubmit = (values: ConventionFormValues) => {
+    if (!id) return
+    const payload = {
+      idPartenaire: values.idPartenaire,
+      idProjet: id,
+      montantContribution: Number(values.montantContribution) || 0,
+      montantDebloque: Number(values.montantDebloque) || 0,
+      etatConvention: values.etatConvention,
+      dateParticipation: values.dateParticipation || null,
+    }
+
+    if (conventionModalMode === 'edit' && editingConvention) {
+      dispatch(
+        editConventionSpecifique({
+          id: editingConvention.idConventionSpecifique,
+          idProjet: id,
+          payload,
+        })
+      )
+    } else {
+      dispatch(addConventionSpecifique(payload))
+    }
+  }
+
+  const handleConfirmDeleteConvention = () => {
+    if (deleteConventionTarget && id) {
+      dispatch(removeConventionSpecifique({ id: deleteConventionTarget.idConventionSpecifique, idProjet: id }))
+    }
+  }
+
+  // ─── Sociétés / marchés ───────────────────────────────────────────────
+  const openCreateMarcheModal = () => {
+    setMarcheModalMode('create')
+    setEditingMarche(null)
+    setMarcheModalOpen(true)
+  }
+
+  const openEditMarcheModal = (marche: Marche) => {
+    setMarcheModalMode('edit')
+    setEditingMarche(marche)
+    setMarcheModalOpen(true)
+  }
+
+  const toMarcheFormValues = (m: Marche): MarcheFormValues => ({
+    typeAction: m.typeAction,
+    attributaireRealisateur: m.attributaireRealisateur ?? '',
+    montantEngage: m.montantEngage != null ? String(m.montantEngage) : '',
+    estimation: m.estimation != null ? String(m.estimation) : '',
+    avancementPhysique: m.avancementPhysique != null ? String(m.avancementPhysique) : '',
+    avancementFinancier: m.avancementFinancier != null ? String(m.avancementFinancier) : '',
+    dateDebut: m.dateDebut ?? '',
+    dateFin: m.dateFin ?? '',
+  })
+
+  const handleMarcheSubmit = (values: MarcheFormValues) => {
+    if (!id || !values.typeAction) return
+    const payload = {
+      idProjet: id,
+      typeAction: values.typeAction as TypeAction,
+      attributaireRealisateur: values.attributaireRealisateur.trim(),
+      montantEngage: values.montantEngage ? Number(values.montantEngage) : null,
+      estimation: values.estimation ? Number(values.estimation) : null,
+      avancementPhysique: values.avancementPhysique ? Number(values.avancementPhysique) : null,
+      avancementFinancier: values.avancementFinancier ? Number(values.avancementFinancier) : null,
+      dateDebut: values.dateDebut || null,
+      dateFin: values.dateFin || null,
+    }
+
+    if (marcheModalMode === 'edit' && editingMarche) {
+      dispatch(editMarche({ id: editingMarche.idMarche, idProjet: id, payload }))
+    } else {
+      dispatch(addMarche(payload))
+    }
+  }
+
+  const handleConfirmDeleteMarche = () => {
+    if (deleteMarcheTarget && id) {
+      dispatch(removeMarche({ id: deleteMarcheTarget.idMarche, idProjet: id }))
+    }
+  }
 
   return (
     <div className="fiche-container">
@@ -126,35 +344,157 @@ export default function FicheProjet() {
         )}
       </div>
 
-      <div className="fiche-lists-row">
-        <div className="fiche-list-card">
-          <div className="fiche-list-header">
-            <Users size={16} className="fiche-icon-highlight" />
-            <h2>Partenaires ({selected.partenaires?.length ?? 0})</h2>
-          </div>
-          {(!selected.partenaires || selected.partenaires.length === 0) ? (
-            <p className="fiche-list-empty">Aucun partenaire lié.</p>
-          ) : (
-            <ul className="fiche-list">
-              {selected.partenaires.map((nom, i) => <li key={i}>{nom}</li>)}
-            </ul>
-          )}
+      {/* Partenaires associés (Convention Spécifique) */}
+      <div className="section-block">
+        <div className="section-block__header">
+          <p className="section-block__title">
+            <Users size={16} style={{ verticalAlign: '-3px', marginRight: 6, color: '#145A8D' }} />
+            Partenaires ({conventionsSpecifiques.length})
+          </p>
+          <button className="btn-primary-solid btn-sm" onClick={openCreateConventionModal}>
+            <Plus size={14} /> Associer un Partenaire
+          </button>
         </div>
-
-        <div className="fiche-list-card">
-          <div className="fiche-list-header">
-            <Building2 size={16} className="fiche-icon-highlight" />
-            <h2>Sociétés des marchés ({selected.marches?.length ?? 0})</h2>
-          </div>
-          {(!selected.marches || selected.marches.length === 0) ? (
-            <p className="fiche-list-empty">Aucun marché lié.</p>
-          ) : (
-            <ul className="fiche-list">
-              {selected.marches.map((nom, i) => <li key={i}>{nom}</li>)}
-            </ul>
-          )}
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Partenaire</th>
+                <th>Contribution</th>
+                <th>Débloqué</th>
+                <th>Date de Participation</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {conventionsSpecifiques.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="empty-state">Aucun partenaire associé.</td>
+                </tr>
+              )}
+              {conventionsSpecifiques.map((c) => {
+                const partenaireAssocie = partenaires.find((p) => p.idPartenaire === c.idPartenaire)
+                return (
+                  <tr key={c.idConventionSpecifique}>
+                    <td>{partenaireAssocie?.nom ?? '—'}</td>
+                    <td>{formatMontant(c.montantContribution)}</td>
+                    <td>{formatMontant(c.montantDebloque)}</td>
+                    <td>{formatDate(c.dateParticipation)}</td>
+                    <td className="row-actions">
+                      <button className="icon-btn" onClick={() => openEditConventionModal(c)} aria-label="Modifier">
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        className="icon-btn icon-btn--danger"
+                        onClick={() => setDeleteConventionTarget(c)}
+                        aria-label="Supprimer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Sociétés des marchés */}
+      <div className="section-block">
+        <div className="section-block__header">
+          <p className="section-block__title">
+            <Building2 size={16} style={{ verticalAlign: '-3px', marginRight: 6, color: '#C64A11' }} />
+            Sociétés des marchés ({marches.length})
+          </p>
+          <button className="btn-primary-solid btn-sm" onClick={openCreateMarcheModal}>
+            <Plus size={14} /> Ajouter une Société
+          </button>
+        </div>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Société</th>
+                <th>Type</th>
+                <th>Montant engagé</th>
+                <th>Avanc. physique</th>
+                <th>Avanc. financier</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {marches.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="empty-state">Aucun marché lié.</td>
+                </tr>
+              )}
+              {marches.map((m) => (
+                <tr key={m.idMarche}>
+                  <td>{m.attributaireRealisateur ?? '—'}</td>
+                  <td><span className="etat-badge">{typeActionLabel(m.typeAction)}</span></td>
+                  <td>{formatMontant(m.montantEngage)}</td>
+                  <td>{m.avancementPhysique != null ? `${m.avancementPhysique}%` : '—'}</td>
+                  <td>{m.avancementFinancier != null ? `${m.avancementFinancier}%` : '—'}</td>
+                  <td className="row-actions">
+                    <button className="icon-btn" onClick={() => openEditMarcheModal(m)} aria-label="Modifier">
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      className="icon-btn icon-btn--danger"
+                      onClick={() => setDeleteMarcheTarget(m)}
+                      aria-label="Supprimer"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <AssocierPartenaireModal
+        isOpen={conventionModalOpen}
+        isSubmitting={
+          conventionModalMode === 'edit'
+            ? editConventionSpecifiqueStatus === 'loading'
+            : addConventionSpecifiqueStatus === 'loading'
+        }
+        mode={conventionModalMode}
+        partenaires={partenaires}
+        initialValues={editingConvention ? toConventionFormValues(editingConvention) : undefined}
+        onClose={() => setConventionModalOpen(false)}
+        onSubmit={handleConventionSubmit}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteConventionTarget}
+        title="Supprimer l'association"
+        message="Êtes-vous sûr de vouloir retirer ce partenaire du projet ? Cette action est irréversible."
+        isLoading={deleteConventionSpecifiqueStatus === 'loading'}
+        onConfirm={handleConfirmDeleteConvention}
+        onCancel={() => setDeleteConventionTarget(null)}
+      />
+
+      <AssocierMarcheModal
+        isOpen={marcheModalOpen}
+        isSubmitting={marcheModalMode === 'edit' ? editMarcheStatus === 'loading' : addMarcheStatus === 'loading'}
+        mode={marcheModalMode}
+        initialValues={editingMarche ? toMarcheFormValues(editingMarche) : undefined}
+        onClose={() => setMarcheModalOpen(false)}
+        onSubmit={handleMarcheSubmit}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteMarcheTarget}
+        title="Supprimer le marché"
+        message="Êtes-vous sûr de vouloir supprimer ce marché ? Cette action est irréversible."
+        isLoading={deleteMarcheStatus === 'loading'}
+        onConfirm={handleConfirmDeleteMarche}
+        onCancel={() => setDeleteMarcheTarget(null)}
+      />
     </div>
   )
 }

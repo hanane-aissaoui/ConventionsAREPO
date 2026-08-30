@@ -8,7 +8,9 @@ interface PaginationProps {
 }
 
 export default function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
-  
+  // On affiche toujours la pagination dès qu'il y a au moins un résultat,
+  // même s'il n'y a qu'une seule page (les boutons sont alors désactivés).
+  if (totalPages < 1) return null
 
   const currentPage = page + 1 // conversion 0-indexé (backend) → 1-indexé (affichage)
   const pageNumbers = getPageNumbers(currentPage, totalPages)
