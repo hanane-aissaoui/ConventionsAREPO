@@ -227,3 +227,9 @@
 .type-toggle-btn + .type-toggle-btn {
   border-left: 1px solid #E3E2E2;
 }
+.field-error-inline {
+  color: #DC2626;
+  font-size: 11.5px;
+  margin-left: 6px;
+  white-space: nowrap;
+}

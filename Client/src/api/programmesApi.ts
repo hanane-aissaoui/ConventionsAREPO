@@ -17,6 +17,12 @@ export async function getProgrammes({
   return response.data
 }
 
+// Sans pagination : pour remplir les <select> (ex. formulaire projet).
+export async function getAllProgrammes(): Promise<Programme[]> {
+  const response = await axiosClient.get<Programme[]>("/programmes/all")
+  return response.data
+}
+
 export async function getProgrammeById(id: string): Promise<Programme> {
   const response = await axiosClient.get<Programme>(`/programmes/${id}`)
   return response.data

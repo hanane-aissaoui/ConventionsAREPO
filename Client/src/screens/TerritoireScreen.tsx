@@ -20,6 +20,52 @@ const getBadgeInfo = (node: TerritoireNode, level: number) => {
   return { label: "Commune", cls: "badge-commune" };
 };
 
+// Construit "Province de Berkane" / "Préfecture d'Oujda-Angad" à partir du
+// type choisi et du nom brut tapé par l'utilisateur (sans article).
+function construireNomAvecArticle(type: "Province" | "Préfecture", nomBrut: string): string {
+  const nom = nomBrut.trim();
+  const commenceParVoyelle = /^[aeiouyàâäéèêëïîôöùûü]/i.test(nom);
+  return `${type} ${commenceParVoyelle ? "d'" : "de "}${nom}`;
+}
+
+// Cherche un nœud (région, préfecture ou commune) par id dans tout l'arbre.
+function trouverNoeud(nodes: TerritoireNode[], id: string): TerritoireNode | undefined {
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    const trouve = trouverNoeud(n.enfants, id);
+    if (trouve) return trouve;
+  }
+  return undefined;
+}
+
+// Cherche l'id du parent d'un nœud donné (utile pour savoir dans quelle
+// fratrie vérifier les doublons lors d'une édition).
+function trouverParentId(nodes: TerritoireNode[], childId: string, parentId: string | null = null): string | null | undefined {
+  for (const n of nodes) {
+    if (n.id === childId) return parentId;
+    const trouve = trouverParentId(n.enfants, childId, n.id);
+    if (trouve !== undefined) return trouve;
+  }
+  return undefined;
+}
+
+// Renvoie la liste des "frères et sœurs" d'un nœud : les régions si
+// parentId est null, sinon les enfants du parent visé.
+function getFratrie(data: TerritoireNode[], parentId: string | null): TerritoireNode[] {
+  if (parentId === null) return data;
+  const parent = trouverNoeud(data, parentId);
+  return parent ? parent.enfants : [];
+}
+
+// Vérifie si un nom existe déjà parmi la fratrie (insensible à la casse,
+// espaces ignorés). excludeId sert à ignorer le nœud qu'on est en train
+// de modifier lors d'une édition.
+function nomExisteDeja(nom: string, fratrie: TerritoireNode[], excludeId?: string): boolean {
+  return fratrie.some(
+    (n) => n.id !== excludeId && n.nom.trim().toLowerCase() === nom.trim().toLowerCase()
+  );
+}
+
 export default function TerritoireScreen() {
   const [data, setData] = useState<TerritoireNode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +83,8 @@ export default function TerritoireScreen() {
   // Suppression avec confirmation
   const [toDelete, setToDelete] = useState<{ node: TerritoireNode; level: number } | null>(null);
   const [deleting, setDeleting] = useState(false);
-
+  const [addError, setAddError] = useState<string | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
   const load = () => {
     fetchHierarchieTerritoriale()
       .then((nodes) => {
@@ -58,19 +105,32 @@ export default function TerritoireScreen() {
     });
   };
 
-  const startEdit = (node: TerritoireNode) => {
-    setEditingId(node.id);
-    setEditValue(node.nom);
-  };
+const startEdit = (node: TerritoireNode) => {
+  setEditingId(node.id)
+  setEditValue(node.nom)
+  setEditError(null)
+}
 
-  const saveEdit = async (node: TerritoireNode, level: number) => {
-    if (!editValue.trim()) return;
-    if (level === 0) await updateRegion(node.id, editValue);
-    else if (level === 1) await updatePrefecture(node.id, editValue);
-    else await updateCommune(node.id, editValue);
-    setEditingId(null);
-    load();
-  };
+const saveEdit = async (node: TerritoireNode, level: number) => {
+  if (!editValue.trim()) return
+
+  const parentId = level === 0 ? null : trouverParentId(data, node.id) ?? null
+  if (nomExisteDeja(editValue, getFratrie(data, parentId), node.id)) {
+    setEditError("Ce nom existe déjà.")
+    return
+  }
+
+  try {
+    if (level === 0) await updateRegion(node.id, editValue)
+    else if (level === 1) await updatePrefecture(node.id, editValue)
+    else await updateCommune(node.id, editValue)
+    setEditingId(null)
+    setEditError(null)
+    load()
+  } catch (err) {
+    setEditError(err instanceof Error ? err.message : "Une erreur est survenue.")
+  }
+}
 
   const askRemove = (node: TerritoireNode, level: number) => {
     setToDelete({ node, level });
@@ -97,26 +157,39 @@ export default function TerritoireScreen() {
   };
 
   // parentLevel : -1 = ajout d'une région, 0 = ajout d'une province/préfecture, 1 = ajout d'une commune
-  const startAdd = (parentId: string | null, parentLevel: number) => {
-    setAddingParentId(parentId);
-    setAddValue("");
-    setAddType("Province");
-  };
+const startAdd = (parentId: string | null, parentLevel: number) => {
+  setAddingParentId(parentId)
+  setAddValue("")
+  setAddType("Province")
+  setAddError(null)
+}
 
-  const cancelAdd = () => setAddingParentId(undefined);
+ const cancelAdd = () => {
+  setAddingParentId(undefined)
+  setAddError(null)
+}
+const saveAdd = async (parentId: string | null, parentLevel: number) => {
+  if (!addValue.trim()) return
+  const nom = parentLevel === 0 ? construireNomAvecArticle(addType, addValue) : addValue.trim()
 
-  const saveAdd = async (parentId: string | null, parentLevel: number) => {
-    if (!addValue.trim()) return;
-    const nom = parentLevel === 0 ? `${addType} ${addValue.trim()}` : addValue.trim();
+  if (nomExisteDeja(nom, getFratrie(data, parentId))) {
+    setAddError("Ce nom existe déjà.")
+    return
+  }
 
-    if (parentId === null) await createRegion(nom);
-    else if (parentLevel === 0) await createPrefecture(parentId, nom);
-    else await createCommune(parentId, nom);
+  try {
+    if (parentId === null) await createRegion(nom)
+    else if (parentLevel === 0) await createPrefecture(parentId, nom)
+    else await createCommune(parentId, nom)
 
-    setAddingParentId(undefined);
-    if (parentId) setExpanded((prev) => new Set(prev).add(parentId));
-    load();
-  };
+    setAddingParentId(undefined)
+    setAddError(null)
+    if (parentId) setExpanded((prev) => new Set(prev).add(parentId))
+    load()
+  } catch (err) {
+    setAddError(err instanceof Error ? err.message : "Une erreur est survenue.")
+  }
+}
 
   const countPrefectures = data.reduce((sum, r) => sum + r.enfants.length, 0);
   const countCommunes = data.reduce(
@@ -150,11 +223,13 @@ export default function TerritoireScreen() {
       <input
         autoFocus
         className="territoire-input"
-        placeholder={parentLevel === 0 ? "ex: de Berkane, d'Oujda-Angad..." : "Nom..."}
+        placeholder={parentLevel === 0 ? "ex: Berkane, Oujda-Angad..." : "Nom..."}
         value={addValue}
         onChange={(e) => setAddValue(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && saveAdd(parentId, parentLevel)}
-      />
+     />
+      {addError && <span className="field-error-inline">{addError}</span>}
+
       <button className="icon-btn icon-btn--confirm" onClick={() => saveAdd(parentId, parentLevel)}>
         <Check size={15} />
       </button>
@@ -192,6 +267,8 @@ export default function TerritoireScreen() {
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && saveEdit(node, level)}
               />
+              {editError && <span className="field-error-inline">{editError}</span>}
+
               <button className="icon-btn icon-btn--confirm" onClick={() => saveEdit(node, level)}>
                 <Check size={15} />
               </button>

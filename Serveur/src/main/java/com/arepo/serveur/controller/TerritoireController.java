@@ -38,6 +38,9 @@ public class TerritoireController {
 
     @PostMapping("/regions")
     public ResponseEntity<TerritoireNodeDto> createRegion(@RequestBody NomRequest request) {
+        if (regionRepository.existsByNomIgnoreCase(request.getNom())) {
+            throw new IllegalArgumentException("Une région avec ce nom existe déjà.");
+        }
         Region region = new Region();
         region.setNom(request.getNom());
         regionRepository.save(region);
