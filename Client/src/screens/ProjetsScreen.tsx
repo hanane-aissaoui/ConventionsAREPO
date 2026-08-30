@@ -7,8 +7,12 @@ import type { ProjetDto, ProjetRequest } from '../types/projet'
 import Pagination from '../components/Pagination'
 import './ProjetsScreen.css'
 
+// Doit rester synchronisé avec les statuts proposés dans ProjetModal (ajout de
+// projet depuis la fiche Programme).
+const STATUTS = ['Crée', 'En cours', 'Terminé']
+
 const emptyForm = (): ProjetRequest => ({
-  nom: '', dateDebut: '', dateFin: '', budgetEstime: null, statut: '',
+  nom: '', dateDebut: '', dateFin: '', budgetEstime: null, statut: STATUTS[1],
   idProgramme: '', idCommune: '',
 })
 
@@ -153,7 +157,11 @@ export default function ProjetsScreen() {
                 <input value={form.idCommune} onChange={(e) => setForm((f) => ({ ...f, idCommune: e.target.value }))} required />
               </label>
               <label>Statut
-                <input value={form.statut ?? ''} onChange={(e) => setForm((f) => ({ ...f, statut: e.target.value }))} />
+                <select value={form.statut ?? ''} onChange={(e) => setForm((f) => ({ ...f, statut: e.target.value }))}>
+                  {STATUTS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
               </label>
               <label>Budget estimé
                 <input type="number" value={form.budgetEstime ?? ''} onChange={(e) => setForm((f) => ({ ...f, budgetEstime: e.target.value ? Number(e.target.value) : null }))} />
