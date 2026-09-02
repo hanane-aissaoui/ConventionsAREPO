@@ -21,8 +21,10 @@ import "./ProgrammeDetail.css";
 export default function GestionPartenairesScreen() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { items, status, error: partenairesError, createStatus, editStatus, deleteStatus, deleteError } =
-    useAppSelector((state) => state.partenaires);
+  const {
+    items, status, error: partenairesError,
+    createStatus, createError, editStatus, editError, deleteStatus, deleteError,
+  } = useAppSelector((state) => state.partenaires);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
@@ -56,12 +58,16 @@ export default function GestionPartenairesScreen() {
   }, [deleteStatus, dispatch]);
 
   const openCreateModal = () => {
+    dispatch(resetCreateStatus());
+    dispatch(resetEditStatus());
     setModalMode("create");
     setEditingPartenaire(null);
     setModalOpen(true);
   };
 
   const openEditModal = (partenaire: Partenaire) => {
+    dispatch(resetCreateStatus());
+    dispatch(resetEditStatus());
     setModalMode("edit");
     setEditingPartenaire(partenaire);
     setModalOpen(true);
@@ -173,6 +179,7 @@ export default function GestionPartenairesScreen() {
         isSubmitting={modalMode === "edit" ? editStatus === "loading" : createStatus === "loading"}
         mode={modalMode}
         initialValues={editingPartenaire ? toFormValues(editingPartenaire) : undefined}
+        serverError={modalMode === "edit" ? editError : createError}
         onClose={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
       />

@@ -16,11 +16,13 @@ import ProgrammeModal, { type ProgrammeFormValues } from "../components/Programm
 import ConfirmDialog from "../components/ConfirmDialog"
 import type { Programme } from "../types/programme"
 import "./ProgrammesScreen.css"
-
+import {hasPermission} from '../utils/auth'
 export default function ProgrammesScreen() {
   const dispatch = useAppDispatch()
-  const { items, page, totalPages, totalElements, searchTerm, status, error, createStatus, editStatus, deleteStatus } =
-    useAppSelector((state) => state.programmes)
+  const {
+    items, page, totalPages, totalElements, searchTerm, status, error,
+    createStatus, createError, editStatus, editError, deleteStatus, deleteError,
+  } = useAppSelector((state) => state.programmes)
 
   const [inputValue, setInputValue] = useState(searchTerm)
   // Modal création/édition
@@ -75,12 +77,16 @@ export default function ProgrammesScreen() {
   }
 
   const openCreateModal = () => {
+    dispatch(resetCreateStatus())
+    dispatch(resetEditStatus())
     setModalMode("create")
     setEditingProgramme(null)
     setModalOpen(true)
   }
 
   const openEditModal = (programme: Programme) => {
+    dispatch(resetCreateStatus())
+    dispatch(resetEditStatus())
     setModalMode("edit")
     setEditingProgramme(programme)
     setModalOpen(true)
@@ -102,6 +108,7 @@ export default function ProgrammesScreen() {
   }
 
   const handleDeleteClick = (programme: Programme) => {
+    dispatch(resetDeleteStatus())
     setDeleteTarget(programme)
   }
 
@@ -126,9 +133,11 @@ export default function ProgrammesScreen() {
           <h1>Programmes</h1>
           <p>{totalElements} programme{totalElements !== 1 ? "s" : ""}</p>
         </div>
+        {hasPermission("PROGRAMME_CREATE") && (
         <button className="btn-primary" onClick={openCreateModal}>
           + Nouveau Programme
         </button>
+      )}
       </div>
 
       <div className="programmes-page__filters">
@@ -170,6 +179,7 @@ export default function ProgrammesScreen() {
         isSubmitting={modalMode === "edit" ? editStatus === "loading" : createStatus === "loading"}
         mode={modalMode}
         initialValues={editingProgramme ? toFormValues(editingProgramme) : undefined}
+        serverError={modalMode === "edit" ? editError : createError}
         onClose={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
       />
@@ -179,6 +189,7 @@ export default function ProgrammesScreen() {
         title="Supprimer le programme"
         message={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.objet ?? ""}" ? Cette action est irréversible.`}
         isLoading={deleteStatus === "loading"}
+        error={deleteStatus === "failed" ? deleteError : null}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

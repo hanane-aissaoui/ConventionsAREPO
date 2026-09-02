@@ -15,9 +15,8 @@ import type { ConventionCadre } from "../types/conventionCadre"
 import type { ConventionSpecifique } from "../types/conventionSpecifique"
 import type { Partenaire } from "../types/partenaire"
 import KpiCard from "../components/KpiCard"
+import { statutKey, STATUT_COLORS, STATUT_LABELS } from "../utils/statut"
 import "./DashboardScreen.css"
-
-const PIE_COLORS = ["#145A8D", "#C64A11", "#4CAF50", "#9CA3AF", "#6B7280"]
 
 function formatMd(v: number) {
   return `${(v / 1e6).toFixed(2)} M DH`
@@ -54,7 +53,7 @@ export default function DashboardScreen() {
       .finally(() => setLoading(false))
   }, [])
 
-  const projetsEnCours = projets.filter((p) => p.statut?.toLowerCase().includes("cours")).length
+  const projetsEnCours = projets.filter((p) => statutKey(p.statut) === "encours").length
   const budgetTotal = marches.reduce((s, m) => s + (m.montantEngage ?? 0), 0)
   const tauxMoyen = marches.length > 0
     ? Math.round(marches.reduce((s, m) => s + (m.avancementPhysique ?? 0), 0) / marches.length)
@@ -100,10 +99,12 @@ export default function DashboardScreen() {
         ]
       : contribToutes
 
+  // Regroupé par libellé canonique : « Crée » et « Créé » comptent ensemble.
   const statutsCount: Record<string, number> = {}
   projets.forEach((p) => {
-    const s = p.statut || "Non défini"
-    statutsCount[s] = (statutsCount[s] || 0) + 1
+    const key = statutKey(p.statut)
+    const label = key === "other" ? p.statut || "Non défini" : STATUT_LABELS[key]
+    statutsCount[label] = (statutsCount[label] || 0) + 1
   })
   const pieData = Object.entries(statutsCount).map(([name, value]) => ({ name, value }))
 
@@ -214,17 +215,17 @@ export default function DashboardScreen() {
               <ResponsiveContainer width="100%" height={180}>
                 <PieChart>
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={3}>
-                    {pieData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    {pieData.map((d) => (
+                      <Cell key={d.name} fill={STATUT_COLORS[statutKey(d.name)]} />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #E3E2E2", fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="dashboard-pie-legend">
-                {pieData.map((d, i) => (
+                {pieData.map((d) => (
                   <div key={d.name} className="dashboard-pie-legend__item">
-                    <span className="dashboard-pie-legend__dot" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                    <span className="dashboard-pie-legend__dot" style={{ background: STATUT_COLORS[statutKey(d.name)] }} />
                     {d.name} ({d.value})
                   </div>
                 ))}

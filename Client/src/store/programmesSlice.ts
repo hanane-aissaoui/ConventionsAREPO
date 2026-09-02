@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import { getProgrammes, createProgramme, updateProgramme, deleteProgramme } from "../api/programmesApi"
+import { getApiErrorMessage } from "../utils/apiError"
 import type { Programme, ProgrammeCreateRequest } from "../types/programme"
 
 interface FetchProgrammesArgs {
@@ -16,31 +17,43 @@ export const fetchProgrammes = createAsyncThunk(
 
 export const addProgramme = createAsyncThunk(
   "programmes/addProgramme",
-  async (payload: ProgrammeCreateRequest, { dispatch, getState }) => {
-    await createProgramme(payload)
-    const state = getState() as { programmes: ProgrammesState }
-    await dispatch(fetchProgrammes({ page: state.programmes.page, objet: state.programmes.searchTerm }))
+  async (payload: ProgrammeCreateRequest, { dispatch, getState, rejectWithValue }) => {
+    try {
+      await createProgramme(payload)
+      const state = getState() as { programmes: ProgrammesState }
+      await dispatch(fetchProgrammes({ page: state.programmes.page, objet: state.programmes.searchTerm }))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la création"))
+    }
   }
 )
 
 export const editProgramme = createAsyncThunk(
   "programmes/editProgramme",
-  async ({ id, payload }: { id: string; payload: ProgrammeCreateRequest }, { dispatch, getState }) => {
-    await updateProgramme(id, payload)
-    const state = getState() as { programmes: ProgrammesState }
-    await dispatch(fetchProgrammes({ page: state.programmes.page, objet: state.programmes.searchTerm }))
+  async ({ id, payload }: { id: string; payload: ProgrammeCreateRequest }, { dispatch, getState, rejectWithValue }) => {
+    try {
+      await updateProgramme(id, payload)
+      const state = getState() as { programmes: ProgrammesState }
+      await dispatch(fetchProgrammes({ page: state.programmes.page, objet: state.programmes.searchTerm }))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la modification"))
+    }
   }
 )
 
 export const removeProgramme = createAsyncThunk(
   "programmes/removeProgramme",
-  async (id: string, { dispatch, getState }) => {
-    await deleteProgramme(id)
-    const state = getState() as { programmes: ProgrammesState }
-    // Si on supprime le dernier élément d'une page > 0, on recule d'une page
-    const isLastItemOnPage = state.programmes.items.length === 1 && state.programmes.page > 0
-    const targetPage = isLastItemOnPage ? state.programmes.page - 1 : state.programmes.page
-    await dispatch(fetchProgrammes({ page: targetPage, objet: state.programmes.searchTerm }))
+  async (id: string, { dispatch, getState, rejectWithValue }) => {
+    try {
+      await deleteProgramme(id)
+      const state = getState() as { programmes: ProgrammesState }
+      // Si on supprime le dernier élément d'une page > 0, on recule d'une page
+      const isLastItemOnPage = state.programmes.items.length === 1 && state.programmes.page > 0
+      const targetPage = isLastItemOnPage ? state.programmes.page - 1 : state.programmes.page
+      await dispatch(fetchProgrammes({ page: targetPage, objet: state.programmes.searchTerm }))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la suppression"))
+    }
   }
 )
 
@@ -123,7 +136,8 @@ const programmesSlice = createSlice({
       })
       .addCase(addProgramme.rejected, (state, action) => {
         state.createStatus = "failed"
-        state.createError = action.error.message ?? "Erreur lors de la création"
+        state.createError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la création"
       })
       // Édition
       .addCase(editProgramme.pending, (state) => {
@@ -135,7 +149,8 @@ const programmesSlice = createSlice({
       })
       .addCase(editProgramme.rejected, (state, action) => {
         state.editStatus = "failed"
-        state.editError = action.error.message ?? "Erreur lors de la modification"
+        state.editError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la modification"
       })
       // Suppression
       .addCase(removeProgramme.pending, (state) => {
@@ -147,7 +162,8 @@ const programmesSlice = createSlice({
       })
       .addCase(removeProgramme.rejected, (state, action) => {
         state.deleteStatus = "failed"
-        state.deleteError = action.error.message ?? "Erreur lors de la suppression"
+        state.deleteError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la suppression"
       })
   },
 })

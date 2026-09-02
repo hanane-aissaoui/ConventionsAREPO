@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import {
   fetchHierarchieTerritoriale, type TerritoireNode,
   createRegion, updateRegion, deleteRegion,
@@ -8,6 +8,7 @@ import {
 } from "../api/territoireApi";
 import ConfirmDialog from "../components/ConfirmDialog";
 import "./TerritoireScreen.css";
+import { useNavigate } from "react-router-dom";
 
 const getNiveau1Info = (nom: string) =>
   /^préfecture/i.test(nom.trim())
@@ -67,6 +68,7 @@ function nomExisteDeja(nom: string, fratrie: TerritoireNode[], excludeId?: strin
 }
 
 export default function TerritoireScreen() {
+  const navigate = useNavigate();
   const [data, setData] = useState<TerritoireNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -303,62 +305,67 @@ const saveAdd = async (parentId: string | null, parentLevel: number) => {
   };
 
   return (
-    <div className="territoire-container">
-      <div className="territoire-header">
-        <div>
-          <h1 className="territoire-title">Territoire</h1>
-          
+    <div className="parametres-container">
+      <button className="btn-back" onClick={() => navigate("/parametres")}>
+        <ArrowLeft size={14} /> Retour aux Paramètres
+      </button>
+
+      <div className="territoire-container">
+        <div className="territoire-header">
+          <div>
+            <h1 className="territoire-title">Territoire</h1>
+          </div>
+          <button className="btn-primary" onClick={() => startAdd(null, -1)}>
+            <Plus size={16} />
+            Ajouter une Région
+          </button>
         </div>
-        <button className="btn-primary" onClick={() => startAdd(null, -1)}>
-          <Plus size={16} />
-          Ajouter une Région
-        </button>
+
+        {loading && <p style={{ color: "#9CA3AF", fontSize: 13 }}>Chargement...</p>}
+        {error && <p style={{ color: "#C64A11", fontSize: 13 }}>{error}</p>}
+
+        {!loading && !error && (
+          <>
+            <div className="territoire-stats">
+              <div className="stat-card">
+                <div className="stat-value stat-blue">{data.length}</div>
+                <div className="stat-label">Région{data.length > 1 ? "s" : ""}</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value stat-orange">{countPrefectures}</div>
+                <div className="stat-label">Provinces &amp; Préfectures</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-value stat-green">{countCommunes}</div>
+                <div className="stat-label">Communes</div>
+              </div>
+            </div>
+
+            <div className="territoire-tree">
+              <h2 className="section-title">Structure territoriale</h2>
+              {addingParentId === null && renderAddRow(null, -1, 0)}
+              {data.map((region) => renderNode(region, 0))}
+            </div>
+          </>
+        )}
+
+        <ConfirmDialog
+          isOpen={toDelete !== null}
+          title="Supprimer cette entité ?"
+          message={
+            toDelete
+              ? `Voulez-vous vraiment supprimer "${toDelete.node.nom}" ? Cette action est irréversible${
+                  toDelete.node.enfants.length > 0
+                    ? " et supprimera également toutes les entités qu'elle contient"
+                    : ""
+                }.`
+              : ""
+          }
+          isLoading={deleting}
+          onConfirm={confirmRemove}
+          onCancel={cancelRemove}
+        />
       </div>
-
-      {loading && <p style={{ color: "#9CA3AF", fontSize: 13 }}>Chargement...</p>}
-      {error && <p style={{ color: "#C64A11", fontSize: 13 }}>{error}</p>}
-
-      {!loading && !error && (
-        <>
-          <div className="territoire-stats">
-            <div className="stat-card">
-              <div className="stat-value stat-blue">{data.length}</div>
-              <div className="stat-label">Région{data.length > 1 ? "s" : ""}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value stat-orange">{countPrefectures}</div>
-              <div className="stat-label">Provinces &amp; Préfectures</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value stat-green">{countCommunes}</div>
-              <div className="stat-label">Communes</div>
-            </div>
-          </div>
-
-          <div className="territoire-tree">
-            <h2 className="section-title">Structure territoriale</h2>
-            {addingParentId === null && renderAddRow(null, -1, 0)}
-            {data.map((region) => renderNode(region, 0))}
-          </div>
-        </>
-      )}
-
-      <ConfirmDialog
-        isOpen={toDelete !== null}
-        title="Supprimer cette entité ?"
-        message={
-          toDelete
-            ? `Voulez-vous vraiment supprimer "${toDelete.node.nom}" ? Cette action est irréversible${
-                toDelete.node.enfants.length > 0
-                  ? " et supprimera également toutes les entités qu'elle contient"
-                  : ""
-              }.`
-            : ""
-        }
-        isLoading={deleting}
-        onConfirm={confirmRemove}
-        onCancel={cancelRemove}
-      />
     </div>
   );
 }

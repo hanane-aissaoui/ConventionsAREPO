@@ -12,6 +12,8 @@ interface PartenaireModalProps {
   isSubmitting: boolean
   mode: "create" | "edit"
   initialValues?: PartenaireFormValues
+  /** Message d'erreur renvoyé par le serveur (ex. 403 droits insuffisants). */
+  serverError?: string | null
   onClose: () => void
   onSubmit: (values: PartenaireFormValues) => void
 }
@@ -27,6 +29,7 @@ export default function PartenaireModal({
   isSubmitting,
   mode,
   initialValues,
+  serverError,
   onClose,
   onSubmit,
 }: PartenaireModalProps) {
@@ -104,6 +107,8 @@ export default function PartenaireModal({
             </div>
           </div>
         </form>
+
+        {serverError && <p className="modal-server-error">{serverError}</p>}
 
         <div className="modal-footer">
           <button className="btn-secondary" onClick={onClose} disabled={isSubmitting}>

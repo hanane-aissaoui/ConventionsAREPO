@@ -52,18 +52,6 @@
   margin-bottom: 24px;
 }
 
-.detail-card__badge {
-  display: inline-block;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 13px;
-  font-weight: 700;
-  color: #145A8D;
-  background: #E0F0FC;
-  padding: 4px 12px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
 .detail-card__title {
   font-size: 19px;
   font-weight: 700;
@@ -276,8 +264,8 @@ td {
   color: #145A8D;
 }
 
-/* ---- Convention status ---- */
-.etat-badge {
+/* Étiquette neutre (type d'action d'un marché : Travaux, Études…). */
+.type-tag {
   display: inline-block;
   font-size: 11.5px;
   font-weight: 600;
@@ -286,11 +274,6 @@ td {
   background: #F0F0F0;
   color: #6B7280;
   white-space: nowrap;
-}
-
-.etat-badge--ok {
-  background: rgba(74, 222, 128, 0.15);
-  color: #16803c;
 }
 
 /* ---- Actions ---- */
@@ -471,27 +454,7 @@ td {
   white-space: nowrap;
 }
 
-/* Statut projet */
-.statut-badge {
-  display: inline-block;
-  padding: 5px 11px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.statut-badge--cours {
-  background: #FFF1E8;
-  color: #C64A11;
-  border: 1px solid #FFD8C2;
-}
-
-.statut-badge--retard {
-  background: #FDE8E8;
-  color: #C6291B;
-  border: 1px solid #F8CACA;
-}
+/* Le statut projet utilise le composant partagé <StatutBadge> (.status-pill). */
 
 /* Actions du tableau projets */
 .programme-detail .projets-table .row-actions {

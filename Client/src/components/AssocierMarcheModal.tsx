@@ -18,6 +18,8 @@ interface AssocierMarcheModalProps {
   isSubmitting: boolean
   mode: "create" | "edit"
   initialValues?: MarcheFormValues
+  /** Message d'erreur renvoyé par le serveur (ex. 403 droits insuffisants). */
+  serverError?: string | null
   onClose: () => void
   onSubmit: (values: MarcheFormValues) => void
 }
@@ -38,6 +40,7 @@ export default function AssocierMarcheModal({
   isSubmitting,
   mode,
   initialValues,
+  serverError,
   onClose,
   onSubmit,
 }: AssocierMarcheModalProps) {
@@ -168,6 +171,8 @@ export default function AssocierMarcheModal({
             </div>
           </div>
         </form>
+
+        {serverError && <p className="modal-server-error">{serverError}</p>}
 
         <div className="modal-footer">
           <button className="btn-secondary" onClick={onClose} disabled={isSubmitting}>

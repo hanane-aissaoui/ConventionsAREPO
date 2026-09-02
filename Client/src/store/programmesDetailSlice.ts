@@ -15,6 +15,7 @@ import {
 } from "../api/projetApi"
 import type { Programme, ProgrammeCreateRequest } from "../types/programme"
 import type { Partenaire } from "../types/partenaire"
+import { getApiErrorMessage } from "../utils/apiError"
 import type { ConventionCadre, ConventionCadreCreateRequest } from "../types/conventionCadre"
 import type { ProjetDto, ProjetRequest } from "../types/projet"
 
@@ -25,14 +26,21 @@ export const fetchProgrammeById = createAsyncThunk(
 
 export const editProgrammeDetail = createAsyncThunk(
   "programmeDetail/edit",
-  async ({ id, payload }: { id: string; payload: ProgrammeCreateRequest }) => updateProgramme(id, payload)
+  async ({ id, payload }: { id: string; payload: ProgrammeCreateRequest }, { rejectWithValue }) => {
+    try { return await updateProgramme(id, payload) }
+    catch (err) { return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la modification")) }
+  }
 )
 
 export const removeProgramme = createAsyncThunk(
   "programmeDetail/remove",
-  async (id: string) => {
-    await deleteProgramme(id)
-    return id
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await deleteProgramme(id)
+      return id
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la suppression"))
+    }
   }
 )
 
@@ -48,9 +56,13 @@ export const fetchConventionsCadre = createAsyncThunk(
 
 export const addConventionCadre = createAsyncThunk(
   "programmeDetail/addConventionCadre",
-  async (payload: ConventionCadreCreateRequest, { dispatch }) => {
-    await createConventionCadre(payload)
-    await dispatch(fetchConventionsCadre(payload.idProgramme))
+  async (payload: ConventionCadreCreateRequest, { dispatch, rejectWithValue }) => {
+    try {
+      await createConventionCadre(payload)
+      await dispatch(fetchConventionsCadre(payload.idProgramme))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la création de la convention"))
+    }
   }
 )
 
@@ -58,18 +70,26 @@ export const editConventionCadre = createAsyncThunk(
   "programmeDetail/editConventionCadre",
   async (
     { id, idProgramme, payload }: { id: string; idProgramme: string; payload: ConventionCadreCreateRequest },
-    { dispatch }
+    { dispatch, rejectWithValue }
   ) => {
-    await updateConventionCadre(id, payload)
-    await dispatch(fetchConventionsCadre(idProgramme))
+    try {
+      await updateConventionCadre(id, payload)
+      await dispatch(fetchConventionsCadre(idProgramme))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la modification de la convention"))
+    }
   }
 )
 
 export const removeConventionCadre = createAsyncThunk(
   "programmeDetail/removeConventionCadre",
-  async ({ id, idProgramme }: { id: string; idProgramme: string }, { dispatch }) => {
-    await deleteConventionCadre(id)
-    await dispatch(fetchConventionsCadre(idProgramme))
+  async ({ id, idProgramme }: { id: string; idProgramme: string }, { dispatch, rejectWithValue }) => {
+    try {
+      await deleteConventionCadre(id)
+      await dispatch(fetchConventionsCadre(idProgramme))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la suppression de la convention"))
+    }
   }
 )
 
@@ -82,9 +102,13 @@ export const fetchProjets = createAsyncThunk(
 
 export const addProjet = createAsyncThunk(
   "programmeDetail/addProjet",
-  async (payload: ProjetRequest, { dispatch }) => {
-    await createProjet(payload)
-    await dispatch(fetchProjets(payload.idProgramme))
+  async (payload: ProjetRequest, { dispatch, rejectWithValue }) => {
+    try {
+      await createProjet(payload)
+      await dispatch(fetchProjets(payload.idProgramme))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la création du projet"))
+    }
   }
 )
 
@@ -92,18 +116,26 @@ export const editProjet = createAsyncThunk(
   "programmeDetail/editProjet",
   async (
     { id, idProgramme, payload }: { id: string; idProgramme: string; payload: ProjetRequest },
-    { dispatch }
+    { dispatch, rejectWithValue }
   ) => {
-    await updateProjet(id, payload)
-    await dispatch(fetchProjets(idProgramme))
+    try {
+      await updateProjet(id, payload)
+      await dispatch(fetchProjets(idProgramme))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la modification du projet"))
+    }
   }
 )
 
 export const removeProjet = createAsyncThunk(
   "programmeDetail/removeProjet",
-  async ({ id, idProgramme }: { id: string; idProgramme: string }, { dispatch }) => {
-    await deleteProjet(id)
-    await dispatch(fetchProjets(idProgramme))
+  async ({ id, idProgramme }: { id: string; idProgramme: string }, { dispatch, rejectWithValue }) => {
+    try {
+      await deleteProjet(id)
+      await dispatch(fetchProjets(idProgramme))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la suppression du projet"))
+    }
   }
 )
 
@@ -116,6 +148,7 @@ interface ProgrammeDetailState {
   editError: string | null
 
   deleteStatus: "idle" | "loading" | "succeeded" | "failed"
+  deleteError: string | null
 
   partenaires: Partenaire[]
   partenairesStatus: "idle" | "loading" | "succeeded" | "failed"
@@ -130,6 +163,7 @@ interface ProgrammeDetailState {
   editConventionError: string | null
 
   deleteConventionStatus: "idle" | "loading" | "succeeded" | "failed"
+  deleteConventionError: string | null
 
   projets: ProjetDto[]
   projetsStatus: "idle" | "loading" | "succeeded" | "failed"
@@ -141,6 +175,7 @@ interface ProgrammeDetailState {
   editProjetError: string | null
 
   deleteProjetStatus: "idle" | "loading" | "succeeded" | "failed"
+  deleteProjetError: string | null
 }
 
 const initialState: ProgrammeDetailState = {
@@ -150,6 +185,7 @@ const initialState: ProgrammeDetailState = {
   editStatus: "idle",
   editError: null,
   deleteStatus: "idle",
+  deleteError: null,
   partenaires: [],
   partenairesStatus: "idle",
   conventionsCadre: [],
@@ -159,6 +195,7 @@ const initialState: ProgrammeDetailState = {
   editConventionStatus: "idle",
   editConventionError: null,
   deleteConventionStatus: "idle",
+  deleteConventionError: null,
   projets: [],
   projetsStatus: "idle",
   addProjetStatus: "idle",
@@ -166,6 +203,7 @@ const initialState: ProgrammeDetailState = {
   editProjetStatus: "idle",
   editProjetError: null,
   deleteProjetStatus: "idle",
+  deleteProjetError: null,
 }
 
 const programmeDetailSlice = createSlice({
@@ -187,6 +225,7 @@ const programmeDetailSlice = createSlice({
     },
     resetDeleteConventionStatus: (state) => {
       state.deleteConventionStatus = "idle"
+      state.deleteConventionError = null
     },
     resetAddProjetStatus: (state) => {
       state.addProjetStatus = "idle"
@@ -198,6 +237,7 @@ const programmeDetailSlice = createSlice({
     },
     resetDeleteProjetStatus: (state) => {
       state.deleteProjetStatus = "idle"
+      state.deleteProjetError = null
     },
   },
   extraReducers: (builder) => {
@@ -224,16 +264,20 @@ const programmeDetailSlice = createSlice({
       })
       .addCase(editProgrammeDetail.rejected, (state, action) => {
         state.editStatus = "failed"
-        state.editError = action.error.message ?? "Erreur lors de la modification"
+        state.editError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la modification"
       })
       .addCase(removeProgramme.pending, (state) => {
         state.deleteStatus = "loading"
+        state.deleteError = null
       })
       .addCase(removeProgramme.fulfilled, (state) => {
         state.deleteStatus = "succeeded"
       })
-      .addCase(removeProgramme.rejected, (state) => {
+      .addCase(removeProgramme.rejected, (state, action) => {
         state.deleteStatus = "failed"
+        state.deleteError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la suppression"
       })
       .addCase(fetchPartenairesList.pending, (state) => {
         state.partenairesStatus = "loading"
@@ -264,7 +308,8 @@ const programmeDetailSlice = createSlice({
       })
       .addCase(addConventionCadre.rejected, (state, action) => {
         state.addConventionStatus = "failed"
-        state.addConventionError = action.error.message ?? "Erreur lors de la création de la convention"
+        state.addConventionError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la création de la convention"
       })
       .addCase(editConventionCadre.pending, (state) => {
         state.editConventionStatus = "loading"
@@ -275,16 +320,20 @@ const programmeDetailSlice = createSlice({
       })
       .addCase(editConventionCadre.rejected, (state, action) => {
         state.editConventionStatus = "failed"
-        state.editConventionError = action.error.message ?? "Erreur lors de la modification de la convention"
+        state.editConventionError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la modification de la convention"
       })
       .addCase(removeConventionCadre.pending, (state) => {
         state.deleteConventionStatus = "loading"
+        state.deleteConventionError = null
       })
       .addCase(removeConventionCadre.fulfilled, (state) => {
         state.deleteConventionStatus = "succeeded"
       })
-      .addCase(removeConventionCadre.rejected, (state) => {
+      .addCase(removeConventionCadre.rejected, (state, action) => {
         state.deleteConventionStatus = "failed"
+        state.deleteConventionError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la suppression de la convention"
       })
       // Projets
       .addCase(fetchProjets.pending, (state) => {
@@ -306,7 +355,8 @@ const programmeDetailSlice = createSlice({
       })
       .addCase(addProjet.rejected, (state, action) => {
         state.addProjetStatus = "failed"
-        state.addProjetError = action.error.message ?? "Erreur lors de la création du projet"
+        state.addProjetError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la création du projet"
       })
       .addCase(editProjet.pending, (state) => {
         state.editProjetStatus = "loading"
@@ -317,16 +367,20 @@ const programmeDetailSlice = createSlice({
       })
       .addCase(editProjet.rejected, (state, action) => {
         state.editProjetStatus = "failed"
-        state.editProjetError = action.error.message ?? "Erreur lors de la modification du projet"
+        state.editProjetError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la modification du projet"
       })
       .addCase(removeProjet.pending, (state) => {
         state.deleteProjetStatus = "loading"
+        state.deleteProjetError = null
       })
       .addCase(removeProjet.fulfilled, (state) => {
         state.deleteProjetStatus = "succeeded"
       })
-      .addCase(removeProjet.rejected, (state) => {
+      .addCase(removeProjet.rejected, (state, action) => {
         state.deleteProjetStatus = "failed"
+        state.deleteProjetError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la suppression du projet"
       })
   },
 })

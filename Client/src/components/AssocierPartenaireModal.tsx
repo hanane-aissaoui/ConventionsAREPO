@@ -16,6 +16,8 @@ interface AssocierPartenaireModalProps {
   mode: "create" | "edit"
   partenaires: Partenaire[]
   initialValues?: ConventionFormValues
+  /** Message d'erreur renvoyé par le serveur (ex. 403 droits insuffisants). */
+  serverError?: string | null
   onClose: () => void
   onSubmit: (values: ConventionFormValues) => void
 }
@@ -34,6 +36,7 @@ export default function AssocierPartenaireModal({
   mode,
   partenaires,
   initialValues,
+  serverError,
   onClose,
   onSubmit,
 }: AssocierPartenaireModalProps) {
@@ -132,6 +135,8 @@ export default function AssocierPartenaireModal({
             />
           </div>
         </form>
+
+        {serverError && <p className="modal-server-error">{serverError}</p>}
 
         <div className="modal-footer">
           <button className="btn-secondary" onClick={onClose} disabled={isSubmitting}>
