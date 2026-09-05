@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -40,6 +41,17 @@ public class GlobalExceptionHandler {
         log.warn("Violation d'integrite des donnees : {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body("Impossible d'effectuer cette action : cet element est encore utilise ailleurs.");
+    }
+
+    // 403 : role insuffisant. Quand le refus vient de la securite de
+    // methode (@PreAuthorize), l'AccessDeniedException est levee pendant
+    // l'appel du controleur et remonte ici AVANT d'atteindre le
+    // RestAccessDeniedHandler de Spring Security. Sans ce handler, elle
+    // tomberait dans le filet "Exception" ci-dessous et renverrait un 500.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Vous n'avez pas les droits necessaires pour cette action.");
     }
 
     // Filet de securite final : toute erreur non prevue ci-dessus tombe

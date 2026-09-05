@@ -93,7 +93,7 @@ export default function TerritoireScreen() {
         setData(nodes);
         setExpanded((prev) => new Set([...prev, ...nodes.map((n) => n.id)]));
       })
-      .catch(() => setError("Impossible de charger la hiérarchie territoriale"))
+      .catch((e) => setError(e?.message))
       .finally(() => setLoading(false));
   };
 

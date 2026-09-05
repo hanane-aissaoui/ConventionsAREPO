@@ -32,11 +32,11 @@ public final class RolePermissions {
 
                 Permission.CONVENTION_VIEW,
                 Permission.CONVENTION_CREATE,
-                Permission.CONVENTION_EDIT,
+                Permission.CONVENTION_EDIT
 
-                Permission.PARTENAIRE_VIEW,
+               // Permission.PARTENAIRE_VIEW,
 
-                Permission.TERRITOIRE_VIEW
+               // Permission.TERRITOIRE_VIEW
         ));
     }
 
