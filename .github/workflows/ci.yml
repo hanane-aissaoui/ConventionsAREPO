@@ -20,7 +20,8 @@ jobs:
     # Necessaire pour ServeurApplicationTests (@SpringBootTest demarre toute l'appli).
     services:
       postgres:
-        image: postgres:16
+        # Meme image officielle, via le miroir AWS (Docker Hub limite les telechargements depuis GitHub)
+        image: public.ecr.aws/docker/library/postgres:16
         env:
           POSTGRES_DB: conventions_arepo
           POSTGRES_USER: postgres
