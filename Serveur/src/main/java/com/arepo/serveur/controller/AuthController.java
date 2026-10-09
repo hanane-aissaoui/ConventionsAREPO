@@ -11,9 +11,10 @@ import com.arepo.serveur.security.JwtService;
 import com.arepo.serveur.security.RolePermissions;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,7 +44,11 @@ public class AuthController {
 
             return ResponseEntity.ok(new AuthResponse(token, userDetails.getUsername()));
 
-        } catch (BadCredentialsException e) {
+        } catch (DisabledException e) {
+            // Compte avec status = false : on le dit clairement plutot qu'un 500
+            return ResponseEntity.status(401).body("Ce compte est désactivé. Contactez l'administrateur.");
+        } catch (AuthenticationException e) {
+            // BadCredentials et tout autre echec d'authentification
             return ResponseEntity.status(401).body("Email ou mot de passe incorrect");
         }
     }

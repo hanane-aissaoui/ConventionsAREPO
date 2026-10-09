@@ -43,7 +43,8 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable());
         http.cors(Customizer.withDefaults());
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll());
+        // Seul /login est public : /api/auth/me exige un token (sinon 401 via l'entry point)
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/login").permitAll());
 
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/swagger-ui/**",
                 "/v3/api-docs/**",
