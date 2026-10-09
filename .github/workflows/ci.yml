@@ -1,0 +1,98 @@
+# Pipeline CI : se lance a chaque push et a chaque Pull Request vers main.
+# Deux jobs en parallele : les tests du Serveur (Spring) et le build du Client (React).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  serveur:
+    name: Serveur - tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Serveur
+
+    # Une vraie base PostgreSQL jetable, uniquement pendant ce job.
+    # Necessaire pour ServeurApplicationTests (@SpringBootTest demarre toute l'appli).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: conventions_arepo
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # application.properties est dans .gitignore : on fournit la config par variables
+    # d'environnement. Spring traduit JWT_SECRET -> jwt.secret, SPRING_DATASOURCE_URL -> spring.datasource.url...
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/conventions_arepo
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ci-only-secret-not-used-in-production-0123456789
+      JWT_EXPIRATION: 3600000
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: Serveur/pom.xml
+
+      # mvnw a ete commite depuis Windows sans le droit d'execution
+      - name: Rendre mvnw executable
+        run: chmod +x mvnw
+
+      - name: Lancer les tests
+        run: ./mvnw -B test
+
+      # En cas d'echec, on garde les rapports detailles pour pouvoir les telecharger
+      - name: Rapports de tests (si echec)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: Serveur/target/surefire-reports/
+
+  client:
+    name: Client - lint et build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Client
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Client/package-lock.json
+
+      - name: Installer les dependances
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
