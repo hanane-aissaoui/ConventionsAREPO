@@ -2,6 +2,7 @@ package com.arepo.serveur.controller;
 
 import com.arepo.serveur.dto.NomRequest;
 import com.arepo.serveur.dto.TerritoireNodeDto;
+import com.arepo.serveur.exception.ResourceNotFoundException;
 import com.arepo.serveur.model.Commune;
 import com.arepo.serveur.model.PrefectureProvince;
 import com.arepo.serveur.model.Region;
@@ -54,7 +55,7 @@ public class TerritoireController {
     @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> updateRegion(@PathVariable UUID id, @RequestBody NomRequest request) {
         Region region = regionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Région introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Région introuvable"));
         region.setNom(request.getNom());
         regionRepository.save(region);
         return ResponseEntity.ok(regionToDto(region));
@@ -73,7 +74,7 @@ public class TerritoireController {
     @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> createPrefecture(@PathVariable UUID regionId, @RequestBody NomRequest request) {
         Region region = regionRepository.findById(regionId)
-                .orElseThrow(() -> new RuntimeException("Région introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Région introuvable"));
         PrefectureProvince prefecture = new PrefectureProvince();
         prefecture.setNom(request.getNom());
         prefecture.setRegion(region);
@@ -85,7 +86,7 @@ public class TerritoireController {
     @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> updatePrefecture(@PathVariable UUID id, @RequestBody NomRequest request) {
         PrefectureProvince prefecture = prefectureRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Préfecture/Province introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Préfecture/Province introuvable"));
         prefecture.setNom(request.getNom());
         prefectureRepository.save(prefecture);
         return ResponseEntity.ok(prefectureToDto(prefecture));
@@ -104,7 +105,7 @@ public class TerritoireController {
     @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> createCommune(@PathVariable UUID prefectureId, @RequestBody NomRequest request) {
         PrefectureProvince prefecture = prefectureRepository.findById(prefectureId)
-                .orElseThrow(() -> new RuntimeException("Préfecture/Province introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Préfecture/Province introuvable"));
         Commune commune = new Commune();
         commune.setNom(request.getNom());
         commune.setPrefecture(prefecture);
@@ -116,7 +117,7 @@ public class TerritoireController {
     @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> updateCommune(@PathVariable UUID id, @RequestBody NomRequest request) {
         Commune commune = communeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Commune introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Commune introuvable"));
         commune.setNom(request.getNom());
         communeRepository.save(commune);
         return ResponseEntity.ok(communeToDto(commune));
