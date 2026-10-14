@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import axios from "axios"
 import {
   getAllPartenaires,
   getPartenaireById,
@@ -7,15 +6,8 @@ import {
   updatePartenaire,
   deletePartenaire,
 } from "../api/partenairesApi"
+import { getApiErrorMessage } from "../utils/apiError"
 import type { Partenaire, PartenaireCreateRequest } from "../types/partenaire"
-
-// Extrait le message d'erreur renvoyé par le backend (corps texte), sinon un message par défaut.
-function serverMessage(err: unknown, fallback: string): string {
-  if (axios.isAxiosError(err) && typeof err.response?.data === "string" && err.response.data.trim()) {
-    return err.response.data
-  }
-  return fallback
-}
 
 export const fetchPartenaires = createAsyncThunk(
   "partenaires/fetchPartenaires",
@@ -32,17 +24,25 @@ export const fetchPartenaireDetail = createAsyncThunk(
 
 export const addPartenaire = createAsyncThunk(
   "partenaires/addPartenaire",
-  async (payload: PartenaireCreateRequest, { dispatch }) => {
-    await createPartenaire(payload)
-    await dispatch(fetchPartenaires())
+  async (payload: PartenaireCreateRequest, { dispatch, rejectWithValue }) => {
+    try {
+      await createPartenaire(payload)
+      await dispatch(fetchPartenaires())
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la création"))
+    }
   }
 )
 
 export const editPartenaire = createAsyncThunk(
   "partenaires/editPartenaire",
-  async ({ id, payload }: { id: string; payload: PartenaireCreateRequest }, { dispatch }) => {
-    await updatePartenaire(id, payload)
-    await dispatch(fetchPartenaires())
+  async ({ id, payload }: { id: string; payload: PartenaireCreateRequest }, { dispatch, rejectWithValue }) => {
+    try {
+      await updatePartenaire(id, payload)
+      await dispatch(fetchPartenaires())
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la modification"))
+    }
   }
 )
 
@@ -53,7 +53,7 @@ export const removePartenaire = createAsyncThunk(
       await deletePartenaire(id)
       await dispatch(fetchPartenaires())
     } catch (err) {
-      return rejectWithValue(serverMessage(err, "Erreur lors de la suppression"))
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de la suppression"))
     }
   }
 )
@@ -144,7 +144,8 @@ const partenairesSlice = createSlice({
       })
       .addCase(addPartenaire.rejected, (state, action) => {
         state.createStatus = "failed"
-        state.createError = action.error.message ?? "Erreur lors de la création"
+        state.createError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la création"
       })
       // Édition
       .addCase(editPartenaire.pending, (state) => {
@@ -156,7 +157,8 @@ const partenairesSlice = createSlice({
       })
       .addCase(editPartenaire.rejected, (state, action) => {
         state.editStatus = "failed"
-        state.editError = action.error.message ?? "Erreur lors de la modification"
+        state.editError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de la modification"
       })
       // Suppression
       .addCase(removePartenaire.pending, (state) => {

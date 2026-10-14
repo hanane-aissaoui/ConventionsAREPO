@@ -24,3 +24,14 @@ export function isTokenValid(): boolean {
 export function logout(): void {
   localStorage.removeItem("token")
 }
+
+export function getPermissions(): string[] {
+  const token = localStorage.getItem("token")
+  if (!token) return []
+  const payload = decodeJwtPayload(token) as { permissions?: string[] }
+  return payload?.permissions ?? []
+}
+
+export function hasPermission(permission: string): boolean {
+  return getPermissions().includes(permission)
+}

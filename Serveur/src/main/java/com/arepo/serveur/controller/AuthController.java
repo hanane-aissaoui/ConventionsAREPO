@@ -5,14 +5,18 @@ import com.arepo.serveur.dto.LoginRequest;
 import com.arepo.serveur.dto.ProfileDto;
 import com.arepo.serveur.model.Agent;
 import com.arepo.serveur.model.Compte;
+import com.arepo.serveur.model.Enums;
 import com.arepo.serveur.security.CompteUserDetails;
 import com.arepo.serveur.security.JwtService;
+import com.arepo.serveur.security.RolePermissions;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -49,7 +53,10 @@ public class AuthController {
         CompteUserDetails userDetails = (CompteUserDetails) authentication.getPrincipal();
         Compte compte = userDetails.getCompte();
         Agent agent = compte.getAgent();
-
+        List<String> permissions = RolePermissions.forRole(compte.getRole())
+                .stream()
+                .map(Enums.Permission::name)
+                .toList();
         ProfileDto profile = new ProfileDto(
                 agent.getNom(),
                 agent.getPrenom(),
@@ -57,7 +64,8 @@ public class AuthController {
                 agent.getGrade(),
                 agent.getCin(),
                 agent.getTelephone(),
-                compte.getRole().name()
+                compte.getRole().name(),
+                permissions
         );
 
         return ResponseEntity.ok(profile);

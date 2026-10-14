@@ -17,6 +17,8 @@ import ProgrammeModal, { type ProgrammeFormValues } from "../components/Programm
 import ConfirmDialog from "../components/ConfirmDialog"
 import AssocierPartenaireModal, { type ConventionFormValues } from "../components/AssocierPartenaireModal"
 import ProjetModal, { type ProjetFormValues } from "../components/ProjetModal"
+import StatutBadge from "../components/StatutBadge"
+import EtatBadge from "../components/EtatBadge"
 import type { ConventionCadre } from "../types/conventionCadre"
 import type { ProjetDto } from "../types/projet"
 import "./ProgrammeDetail.css"
@@ -29,20 +31,6 @@ function formatMontant(montant: number | null): string {
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—"
   return new Date(dateStr).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
-}
-
-function EtatBadge({ etat }: { etat: string }) {
-  const isSignee = etat === "Signée"
-  return <span className={`etat-badge ${isSignee ? "etat-badge--ok" : ""}`}>{etat}</span>
-}
-
-function StatutBadge({ statut }: { statut: string | null }) {
-  const isRetard = statut === "En retard"
-  return (
-    <span className={`statut-badge ${isRetard ? "statut-badge--retard" : "statut-badge--cours"}`}>
-      {statut ?? "—"}
-    </span>
-  )
 }
 
 // Regroupe les projets par nomPrefecture (province/préfecture)
@@ -112,9 +100,13 @@ export default function ProgrammeDetail() {
   const dispatch = useAppDispatch()
 
   const {
-    current: programme, status, error, editStatus, deleteStatus,
-    partenaires, conventionsCadre, addConventionStatus, editConventionStatus, deleteConventionStatus,
-    projets, addProjetStatus, editProjetStatus, deleteProjetStatus,
+    current: programme, status, error, editStatus, editError, deleteStatus, deleteError,
+    partenaires, conventionsCadre,
+    addConventionStatus, addConventionError, editConventionStatus, editConventionError,
+    deleteConventionStatus, deleteConventionError,
+    projets,
+    addProjetStatus, addProjetError, editProjetStatus, editProjetError,
+    deleteProjetStatus, deleteProjetError,
   } = useAppSelector((state) => state.programmeDetail)
 
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -430,6 +422,7 @@ export default function ProgrammeDetail() {
           dateFin: programme.dateFin ?? "",
           budgetEstime: programme.budgetEstime != null ? String(programme.budgetEstime) : "",
         }}
+        serverError={editError}
         onClose={() => setEditModalOpen(false)}
         onSubmit={handleEditSubmit}
       />
@@ -439,6 +432,7 @@ export default function ProgrammeDetail() {
         title="Supprimer le programme"
         message={`Êtes-vous sûr de vouloir supprimer "${programme.objet}" ? Cette action est irréversible.`}
         isLoading={deleteStatus === "loading"}
+        error={deleteStatus === "failed" ? deleteError : null}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteDialogOpen(false)}
       />
@@ -449,6 +443,7 @@ export default function ProgrammeDetail() {
         mode={conventionModalMode}
         partenaires={partenaires}
         initialValues={editingConvention ? toConventionFormValues(editingConvention) : undefined}
+        serverError={conventionModalMode === "edit" ? editConventionError : addConventionError}
         onClose={() => setConventionModalOpen(false)}
         onSubmit={handleConventionSubmit}
       />
@@ -458,6 +453,7 @@ export default function ProgrammeDetail() {
         title="Supprimer la convention"
         message="Êtes-vous sûr de vouloir supprimer cette convention ? Cette action est irréversible."
         isLoading={deleteConventionStatus === "loading"}
+        error={deleteConventionStatus === "failed" ? deleteConventionError : null}
         onConfirm={handleConfirmDeleteConvention}
         onCancel={() => setDeleteConventionTarget(null)}
       />
@@ -468,6 +464,7 @@ export default function ProgrammeDetail() {
         mode={editingProjet ? "edit" : "create"}
         initialValues={editingProjet ? toProjetFormValues(editingProjet) : undefined}
         existingCommuneLabel={editingProjet ? `${editingProjet.nomCommune} — ${editingProjet.nomPrefecture}` : undefined}
+        serverError={editingProjet ? editProjetError : addProjetError}
         onClose={() => { setProjetModalOpen(false); setEditingProjet(null) }}
         onSubmit={handleProjetSubmit}
       />
@@ -477,6 +474,7 @@ export default function ProgrammeDetail() {
         title="Supprimer le projet"
         message={`Êtes-vous sûr de vouloir supprimer "${deleteProjetTarget?.nom}" ? Cette action est irréversible.`}
         isLoading={deleteProjetStatus === "loading"}
+        error={deleteProjetStatus === "failed" ? deleteProjetError : null}
         onConfirm={handleConfirmDeleteProjet}
         onCancel={() => setDeleteProjetTarget(null)}
       />

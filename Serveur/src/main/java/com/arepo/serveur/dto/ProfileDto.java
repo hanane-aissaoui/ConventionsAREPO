@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,4 +19,5 @@ public class ProfileDto {
     String cin;
     String telephone;
     String role;
+    List<String> permissions;
 }

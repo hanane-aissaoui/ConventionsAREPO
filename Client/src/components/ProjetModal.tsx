@@ -26,11 +26,13 @@ interface ProjetModalProps {
    * programme est déjà connu : le menu est alors masqué.
    */
   programmes?: Programme[]
+  /** Message d'erreur renvoyé par le serveur (ex. 403 droits insuffisants). */
+  serverError?: string | null
   onClose: () => void
   onSubmit: (values: ProjetFormValues) => void
 }
 
-const STATUTS = ["Crée","En cours","Terminé"]
+const STATUTS = ["Créé", "En cours", "Terminé"]
 
 const emptyForm: ProjetFormValues = {
   nom: "",
@@ -68,6 +70,7 @@ export default function ProjetModal({
   initialValues,
   existingCommuneLabel,
   programmes,
+  serverError,
   onClose,
   onSubmit,
 }: ProjetModalProps) {
@@ -225,6 +228,8 @@ export default function ProjetModal({
             </div>
           </div>
         </form>
+
+        {serverError && <p className="modal-server-error">{serverError}</p>}
 
         <div className="modal-footer">
           <button className="btn-secondary" onClick={onClose} disabled={isSubmitting}>

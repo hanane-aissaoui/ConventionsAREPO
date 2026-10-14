@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, Pencil, Trash2, Plus } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { loadProjets, createProjetThunk, updateProjetThunk, deleteProjetThunk } from '../store/projetsSlice'
+import { loadProjets, createProjetThunk, updateProjetThunk, deleteProjetThunk, clearProjetsError } from '../store/projetsSlice'
 import { getAllProgrammes } from '../api/programmesApi'
 import type { ProjetDto, ProjetRequest } from '../types/projet'
 import type { Programme } from '../types/programme'
 import Pagination from '../components/Pagination'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ProjetModal, { type ProjetFormValues } from '../components/ProjetModal'
+import StatutBadge from '../components/StatutBadge'
 import './ProjetsScreen.css'
 
 export default function ProjetsScreen() {
@@ -47,8 +48,8 @@ export default function ProjetsScreen() {
     if (e.key === 'Enter') handleSearch()
   }
 
-  const openCreate = () => { setEditing(null); setModalOpen(true) }
-  const openEdit = (p: ProjetDto) => { setEditing(p); setModalOpen(true) }
+  const openCreate = () => { dispatch(clearProjetsError()); setEditing(null); setModalOpen(true) }
+  const openEdit = (p: ProjetDto) => { dispatch(clearProjetsError()); setEditing(p); setModalOpen(true) }
 
   // ProjetDto (backend) → valeurs de formulaire (strings)
   const toFormValues = (p: ProjetDto): ProjetFormValues => ({
@@ -89,8 +90,11 @@ export default function ProjetsScreen() {
     setIsDeleting(true)
     const result = await dispatch(deleteProjetThunk(deleteTarget.idProjet))
     setIsDeleting(false)
-    if (deleteProjetThunk.fulfilled.match(result)) refresh()
-    setDeleteTarget(null)
+    if (deleteProjetThunk.fulfilled.match(result)) {
+      refresh()
+      setDeleteTarget(null)
+    }
+    // En cas d'échec (ex. 403), on garde la boîte ouverte : le message s'affiche dedans.
   }
 
   return (
@@ -141,7 +145,7 @@ export default function ProjetsScreen() {
     <td>{p.budgetEstime ?? '—'}</td>
     <td>{p.nbrPartenaire}</td>
     <td>{p.nbrSociete}</td>
-    <td><span className="projets-badge">{p.statut}</span></td>
+    <td><StatutBadge statut={p.statut} /></td>
     <td className="projets-actions" onClick={(e) => e.stopPropagation()}>
       <button title="Voir" onClick={() => navigate(`/projets/${p.idProjet}`)}>
         <Eye size={15} />
@@ -149,7 +153,7 @@ export default function ProjetsScreen() {
       <button title="Éditer" onClick={() => openEdit(p)}>
         <Pencil size={14} />
       </button>
-      <button title="Supprimer" onClick={() => setDeleteTarget(p)} className="projets-delete-link">
+      <button title="Supprimer" onClick={() => { dispatch(clearProjetsError()); setDeleteTarget(p) }} className="projets-delete-link">
         <Trash2 size={14} />
       </button>
     </td>
@@ -172,7 +176,8 @@ export default function ProjetsScreen() {
             : undefined
         }
         programmes={programmes}
-        onClose={() => { setModalOpen(false); setEditing(null) }}
+        serverError={error}
+        onClose={() => { dispatch(clearProjetsError()); setModalOpen(false); setEditing(null) }}
         onSubmit={handleModalSubmit}
       />
 
@@ -181,8 +186,9 @@ export default function ProjetsScreen() {
         title="Supprimer le projet"
         message={`Êtes-vous sûr de vouloir supprimer "${deleteTarget?.nom ?? ''}" ? Cette action est irréversible.`}
         isLoading={isDeleting}
+        error={error}
         onConfirm={confirmDelete}
-        onCancel={() => setDeleteTarget(null)}
+        onCancel={() => { dispatch(clearProjetsError()); setDeleteTarget(null) }}
       />
     </div>
   )

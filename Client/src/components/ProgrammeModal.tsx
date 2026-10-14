@@ -13,6 +13,8 @@ interface ProgrammeModalProps {
   isSubmitting: boolean
   mode: "create" | "edit"
   initialValues?: ProgrammeFormValues
+  /** Message d'erreur renvoyé par le serveur (ex. 403 droits insuffisants). */
+  serverError?: string | null
   onClose: () => void
   onSubmit: (values: ProgrammeFormValues) => void
 }
@@ -29,6 +31,7 @@ export default function ProgrammeModal({
   isSubmitting,
   mode,
   initialValues,
+  serverError,
   onClose,
   onSubmit,
 }: ProgrammeModalProps) {
@@ -118,6 +121,8 @@ export default function ProgrammeModal({
             {errors.budgetEstime && <span className="field-error">{errors.budgetEstime}</span>}
           </div>
         </form>
+
+        {serverError && <p className="modal-server-error">{serverError}</p>}
 
         <div className="modal-footer">
           <button className="btn-secondary" onClick={handleClose} disabled={isSubmitting}>

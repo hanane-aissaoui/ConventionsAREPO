@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
+
 /**
  * Centralise la conversion des exceptions "metier" en reponses HTTP
  * propres, plutot que de laisser Spring renvoyer une stack trace brute
@@ -51,5 +53,15 @@ public class GlobalExceptionHandler {
         log.error("Erreur interne non geree", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Une erreur interne est survenue. Merci de reessayer.");
+    }
+    // 403 : role insuffisant. Quand le refus vient de la securite de
+    // methode (@PreAuthorize), l'AccessDeniedException est levee pendant
+    // l'appel du controleur et remonte ici AVANT d'atteindre le
+    // RestAccessDeniedHandler de Spring Security. Sans ce handler, elle
+    // tomberait dans le filet "Exception" ci-dessous et renverrait un 500.
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Vous n'avez pas les droits necessaires pour cette action.");
     }
 }

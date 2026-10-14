@@ -7,6 +7,7 @@ import {
   loadProjetDetail,
   updateProjetThunk,
   deleteProjetThunk,
+  clearProjetsError,
   fetchConventionsSpecifiques,
   addConventionSpecifique,
   editConventionSpecifique,
@@ -34,6 +35,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ProjetModal, { type ProjetFormValues } from '../components/ProjetModal'
 import AssocierPartenaireModal, { type ConventionFormValues } from '../components/AssocierPartenaireModal'
 import AssocierMarcheModal, { type MarcheFormValues } from '../components/AssocierMarcheModal'
+import StatutBadge from '../components/StatutBadge'
 import './FicheProjet.css'
 import './ProgrammeDetail.css'
 
@@ -96,17 +98,23 @@ export default function FicheProjet() {
   const { id } = useParams()
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const { selected, detailLoading, detailError } = useAppSelector((state) => state.projets)
+  const { selected, detailLoading, detailError, error: projetError } = useAppSelector((state) => state.projets)
 
   const {
     conventionsSpecifiques,
     addConventionSpecifiqueStatus,
+    addConventionSpecifiqueError,
     editConventionSpecifiqueStatus,
+    editConventionSpecifiqueError,
     deleteConventionSpecifiqueStatus,
+    deleteConventionSpecifiqueError,
     marches,
     addMarcheStatus,
+    addMarcheError,
     editMarcheStatus,
+    editMarcheError,
     deleteMarcheStatus,
+    deleteMarcheError,
   } = useAppSelector((state) => state.projets)
 
   const [partenaires, setPartenaires] = useState<Partenaire[]>([])
@@ -342,19 +350,19 @@ export default function FicheProjet() {
 
       <div className="fiche-header-card">
         <div className="fiche-header-actions">
-          <button className="btn-outline" onClick={() => setProjetEditOpen(true)} aria-label="Modifier le projet">
+          <button className="btn-outline" onClick={() => { dispatch(clearProjetsError()); setProjetEditOpen(true) }} aria-label="Modifier le projet">
             <Pencil size={14} />
           </button>
           <button
             className="btn-danger-outline"
-            onClick={() => setProjetDeleteOpen(true)}
+            onClick={() => { dispatch(clearProjetsError()); setProjetDeleteOpen(true) }}
             disabled={projetDeleting}
             aria-label="Supprimer le projet"
           >
             <Trash2 size={14} />
           </button>
         </div>
-        <span className="fiche-badge-orange">{selected.statut}</span>
+        <div className="fiche-badge-row"><StatutBadge statut={selected.statut} /></div>
         <h1 className="fiche-title">{selected.nom}</h1>
 
         <div className="fiche-info-grid">
@@ -498,7 +506,7 @@ export default function FicheProjet() {
               {marches.map((m) => (
                 <tr key={m.idMarche}>
                   <td>{m.attributaireRealisateur ?? '—'}</td>
-                  <td><span className="etat-badge">{typeActionLabel(m.typeAction)}</span></td>
+                  <td><span className="type-tag">{typeActionLabel(m.typeAction)}</span></td>
                   <td>{formatMontant(m.montantEngage)}</td>
                   <td>{m.avancementPhysique != null ? `${m.avancementPhysique}%` : '—'}</td>
                   <td>{m.avancementFinancier != null ? `${m.avancementFinancier}%` : '—'}</td>
@@ -531,6 +539,7 @@ export default function FicheProjet() {
         mode={conventionModalMode}
         partenaires={partenaires}
         initialValues={editingConvention ? toConventionFormValues(editingConvention) : undefined}
+        serverError={conventionModalMode === 'edit' ? editConventionSpecifiqueError : addConventionSpecifiqueError}
         onClose={() => setConventionModalOpen(false)}
         onSubmit={handleConventionSubmit}
       />
@@ -540,6 +549,7 @@ export default function FicheProjet() {
         title="Supprimer l'association"
         message="Êtes-vous sûr de vouloir retirer ce partenaire du projet ? Cette action est irréversible."
         isLoading={deleteConventionSpecifiqueStatus === 'loading'}
+        error={deleteConventionSpecifiqueStatus === 'failed' ? deleteConventionSpecifiqueError : null}
         onConfirm={handleConfirmDeleteConvention}
         onCancel={() => setDeleteConventionTarget(null)}
       />
@@ -549,6 +559,7 @@ export default function FicheProjet() {
         isSubmitting={marcheModalMode === 'edit' ? editMarcheStatus === 'loading' : addMarcheStatus === 'loading'}
         mode={marcheModalMode}
         initialValues={editingMarche ? toMarcheFormValues(editingMarche) : undefined}
+        serverError={marcheModalMode === 'edit' ? editMarcheError : addMarcheError}
         onClose={() => setMarcheModalOpen(false)}
         onSubmit={handleMarcheSubmit}
       />
@@ -558,6 +569,7 @@ export default function FicheProjet() {
         title="Supprimer le marché"
         message="Êtes-vous sûr de vouloir supprimer ce marché ? Cette action est irréversible."
         isLoading={deleteMarcheStatus === 'loading'}
+        error={deleteMarcheStatus === 'failed' ? deleteMarcheError : null}
         onConfirm={handleConfirmDeleteMarche}
         onCancel={() => setDeleteMarcheTarget(null)}
       />
@@ -569,6 +581,7 @@ export default function FicheProjet() {
         initialValues={toProjetFormValues()}
         existingCommuneLabel={`${selected.nomCommune}${selected.nomPrefecture ? ` — ${selected.nomPrefecture}` : ''}`}
         programmes={programmes}
+        serverError={projetError}
         onClose={() => setProjetEditOpen(false)}
         onSubmit={handleProjetEditSubmit}
       />
@@ -578,6 +591,7 @@ export default function FicheProjet() {
         title="Supprimer le projet"
         message={`Êtes-vous sûr de vouloir supprimer "${selected.nom}" ? Cette action est irréversible.`}
         isLoading={projetDeleting}
+        error={projetError}
         onConfirm={handleProjetDelete}
         onCancel={() => setProjetDeleteOpen(false)}
       />

@@ -1,5 +1,6 @@
 package com.arepo.serveur.security;
 
+import com.arepo.serveur.model.Enums.Permission;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 @Service
@@ -24,17 +26,32 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
+
+
     public String generateToken(UserDetails userDetails) {
         Date maintenant = new Date();
         Date expiration = new Date(maintenant.getTime() + expirationMs);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(maintenant)
-                .expiration(expiration)
-                .signWith(getSigningKey())
-                .compact();
+                .expiration(expiration);
+
+
+        if (userDetails instanceof CompteUserDetails compteUserDetails) {
+            var role = compteUserDetails.getCompte().getRole();
+            List<String> permissions = RolePermissions.forRole(role).stream()
+                    .map(Permission::name)
+                    .toList();
+
+            builder.claim("role", role.name())
+                    .claim("permissions", permissions);
+        }
+
+        return builder.signWith(getSigningKey()).compact();
     }
+
+
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

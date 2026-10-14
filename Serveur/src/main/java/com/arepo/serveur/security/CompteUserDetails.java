@@ -6,7 +6,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CompteUserDetails implements UserDetails {
 
@@ -20,11 +21,20 @@ public class CompteUserDetails implements UserDetails {
         return compte;
     }
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-       String role = "ROLE_" + compte.getRole().name();
-        return List.of(new SimpleGrantedAuthority(role));
+        String roleAuthority = "ROLE_" + compte.getRole().name();
+
+        Stream<String> permissionAuthorities = RolePermissions.forRole(compte.getRole())
+                .stream()
+                .map(Enum::name);
+
+        return Stream.concat(Stream.of(roleAuthority), permissionAuthorities)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public String getPassword() {

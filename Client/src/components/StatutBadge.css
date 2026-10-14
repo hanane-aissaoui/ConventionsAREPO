@@ -1,0 +1,72 @@
+/* Pastilles d'état — style unique partagé.
+   Deux familles :
+     .status-pill--cree|encours|termine|other  → statut d'un projet
+     .status-pill--signe|nonsigne              → état d'une convention
+   Une seule source de vérité : modifie ici pour changer l'apparence partout. */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── Statut projet ─────────────────────────────────────────────── */
+
+/* Créé — bleu (créé, pas encore démarré) */
+.status-pill--cree {
+  background: #E0F0FC;
+  color: #145A8D;
+  border-color: #C6E3F5;
+}
+
+/* En cours — ambre */
+.status-pill--encours {
+  background: #FFF4E6;
+  color: #C64A11;
+  border-color: #FFD8C2;
+}
+
+/* Terminé — vert */
+.status-pill--termine {
+  background: #E7F6ED;
+  color: #16803C;
+  border-color: #C6EAD3;
+}
+
+/* Valeur inconnue / héritée (ex. « En retard ») — gris neutre */
+.status-pill--other {
+  background: #F0F0F0;
+  color: #6B7280;
+  border-color: #E3E2E2;
+}
+
+/* ── État convention ───────────────────────────────────────────── */
+
+/* Signée — vert (même langage visuel que « Terminé ») */
+.status-pill--signe {
+  background: #E7F6ED;
+  color: #16803C;
+  border-color: #C6EAD3;
+}
+
+/* Non signée — gris neutre */
+.status-pill--nonsigne {
+  background: #F0F0F0;
+  color: #6B7280;
+  border-color: #E3E2E2;
+}

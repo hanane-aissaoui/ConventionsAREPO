@@ -37,14 +37,8 @@
   gap: 8px;
 }
 
-.fiche-badge-orange {
-  display: inline-block;
-  padding: 3px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  background: #FFF4E6;
-  color: #C64A11;
+/* Ligne du badge de statut (composant partagé <StatutBadge>). */
+.fiche-badge-row {
   margin-bottom: 10px;
 }
 
@@ -248,6 +242,34 @@
   padding: 8px 12px;
   background: #F9F9F9;
   border-radius: 8px;
+}
+
+/* Élément d'association (fiche Partenaire) : nom à gauche, état + montant à droite */
+.fiche-assoc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fiche-assoc-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fiche-assoc-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.fiche-assoc-montant {
+  font-weight: 700;
+  color: #16803C;
+  white-space: nowrap;
 }
 
 .fiche-list-empty {

@@ -107,6 +107,17 @@
   color: #DC2626;
 }
 
+/* Erreur renvoyée par le serveur (ex. 403 « Vous n'avez pas les droits… ») */
+.modal-server-error {
+  margin: 0 26px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #FDE8E8;
+  border: 1px solid #F8CACA;
+  color: #B91C1C;
+  font-size: 12.5px;
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;

@@ -11,6 +11,7 @@ import type { ConventionCadre } from '../types/conventionCadre'
 import type { ConventionSpecifique } from '../types/conventionSpecifique'
 import type { Programme } from '../types/programme'
 import type { ProjetDto } from '../types/projet'
+import EtatBadge from '../components/EtatBadge'
 import './FicheProjet.css'
 
 function formatMontant(montant: number | null): string {
@@ -58,7 +59,7 @@ export default function FichePartenaire() {
 
         <div className="fiche-info-grid">
           <div className="fiche-info-item">
-            <Phone size={16} className="fiche-icon" />
+            <Phone size={16} className="fiche-icon" style={{ color: '#145A8D' }} />
             <div>
               <p className="fiche-label">Téléphone</p>
               <p className="fiche-value">{selected.telephone || '—'}</p>
@@ -66,7 +67,7 @@ export default function FichePartenaire() {
           </div>
 
           <div className="fiche-info-item">
-            <Mail size={16} className="fiche-icon" />
+            <Mail size={16} className="fiche-icon" style={{ color: '#C64A11' }} />
             <div>
               <p className="fiche-label">Email</p>
               <p className="fiche-value">{selected.email || '—'}</p>
@@ -88,8 +89,12 @@ export default function FichePartenaire() {
               {conventionsDuPartenaire.map((c) => {
                 const programme = programmes.find((p) => p.idProgramme === c.idProgramme)
                 return (
-                  <li key={c.idConventionCadre}>
-                    {programme?.objet ?? 'Programme inconnu'} — {c.etatConvention} — {formatMontant(c.montantContribution)}
+                  <li key={c.idConventionCadre} className="fiche-assoc-item">
+                    <span className="fiche-assoc-name">{programme?.objet ?? 'Programme inconnu'}</span>
+                    <span className="fiche-assoc-meta">
+                      <EtatBadge etat={c.etatConvention} />
+                      <span className="fiche-assoc-montant">{formatMontant(c.montantContribution)}</span>
+                    </span>
                   </li>
                 )
               })}
@@ -109,8 +114,12 @@ export default function FichePartenaire() {
               {projetsDuPartenaire.map((c) => {
                 const projet = projets.find((p) => p.idProjet === c.idProjet)
                 return (
-                  <li key={c.idConventionSpecifique}>
-                    {projet?.nom ?? 'Projet inconnu'} — {c.etatConvention} — {formatMontant(c.montantContribution)}
+                  <li key={c.idConventionSpecifique} className="fiche-assoc-item">
+                    <span className="fiche-assoc-name">{projet?.nom ?? 'Projet inconnu'}</span>
+                    <span className="fiche-assoc-meta">
+                      <EtatBadge etat={c.etatConvention} />
+                      <span className="fiche-assoc-montant">{formatMontant(c.montantContribution)}</span>
+                    </span>
                   </li>
                 )
               })}

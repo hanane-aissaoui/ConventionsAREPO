@@ -10,6 +10,7 @@ import com.arepo.serveur.repository.PrefectureProvinceRepository;
 import com.arepo.serveur.repository.RegionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ public class TerritoireController {
     public CommuneRepository communeRepository;
 
     @GetMapping("/hierarchie")
+    @PreAuthorize("hasAuthority('TERRITOIRE_VIEW')")
     public List<TerritoireNodeDto> hierarchie() {
         return regionRepository.findAll().stream()
                 .map(this::regionToDto)
@@ -37,6 +39,7 @@ public class TerritoireController {
     // ---- Region ----
 
     @PostMapping("/regions")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> createRegion(@RequestBody NomRequest request) {
         if (regionRepository.existsByNomIgnoreCase(request.getNom())) {
             throw new IllegalArgumentException("Une région avec ce nom existe déjà.");
@@ -48,6 +51,7 @@ public class TerritoireController {
     }
 
     @PutMapping("/regions/{id}")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> updateRegion(@PathVariable UUID id, @RequestBody NomRequest request) {
         Region region = regionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Région introuvable"));
@@ -57,6 +61,7 @@ public class TerritoireController {
     }
 
     @DeleteMapping("/regions/{id}")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<Void> deleteRegion(@PathVariable UUID id) {
         regionRepository.deleteById(id);
         return ResponseEntity.noContent().build();
@@ -65,6 +70,7 @@ public class TerritoireController {
     // ---- PrefectureProvince ----
 
     @PostMapping("/regions/{regionId}/prefectures")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> createPrefecture(@PathVariable UUID regionId, @RequestBody NomRequest request) {
         Region region = regionRepository.findById(regionId)
                 .orElseThrow(() -> new RuntimeException("Région introuvable"));
@@ -76,6 +82,7 @@ public class TerritoireController {
     }
 
     @PutMapping("/prefectures/{id}")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> updatePrefecture(@PathVariable UUID id, @RequestBody NomRequest request) {
         PrefectureProvince prefecture = prefectureRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Préfecture/Province introuvable"));
@@ -85,6 +92,7 @@ public class TerritoireController {
     }
 
     @DeleteMapping("/prefectures/{id}")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<Void> deletePrefecture(@PathVariable UUID id) {
         prefectureRepository.deleteById(id);
         return ResponseEntity.noContent().build();
@@ -93,6 +101,7 @@ public class TerritoireController {
     // ---- Commune ----
 
     @PostMapping("/prefectures/{prefectureId}/communes")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> createCommune(@PathVariable UUID prefectureId, @RequestBody NomRequest request) {
         PrefectureProvince prefecture = prefectureRepository.findById(prefectureId)
                 .orElseThrow(() -> new RuntimeException("Préfecture/Province introuvable"));
@@ -104,6 +113,7 @@ public class TerritoireController {
     }
 
     @PutMapping("/communes/{id}")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<TerritoireNodeDto> updateCommune(@PathVariable UUID id, @RequestBody NomRequest request) {
         Commune commune = communeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commune introuvable"));
@@ -113,6 +123,7 @@ public class TerritoireController {
     }
 
     @DeleteMapping("/communes/{id}")
+    @PreAuthorize("hasAuthority('TERRITOIRE_MANAGE')")
     public ResponseEntity<Void> deleteCommune(@PathVariable UUID id) {
         communeRepository.deleteById(id);
         return ResponseEntity.noContent().build();

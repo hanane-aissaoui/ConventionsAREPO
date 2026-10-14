@@ -7,6 +7,7 @@ import {
   deleteConventionSpecifique,
 } from '../api/conventionsSpecifiquesApi'
 import { getMarchesByProjet, createMarche, updateMarche, deleteMarche } from '../api/marchesApi'
+import { getApiErrorMessage } from '../utils/apiError'
 import type { ProjetDto, ProjetRequest } from '../types/projet'
 import type { ConventionSpecifique, ConventionSpecifiqueCreateRequest } from '../types/conventionSpecifique'
 import type { Marche, MarcheCreateRequest } from '../types/marche'
@@ -29,6 +30,7 @@ interface ProjetsState {
   editConventionSpecifiqueStatus: 'idle' | 'loading' | 'succeeded' | 'failed'
   editConventionSpecifiqueError: string | null
   deleteConventionSpecifiqueStatus: 'idle' | 'loading' | 'succeeded' | 'failed'
+  deleteConventionSpecifiqueError: string | null
 
   marches: Marche[]
   marchesStatus: 'idle' | 'loading' | 'succeeded' | 'failed'
@@ -37,6 +39,7 @@ interface ProjetsState {
   editMarcheStatus: 'idle' | 'loading' | 'succeeded' | 'failed'
   editMarcheError: string | null
   deleteMarcheStatus: 'idle' | 'loading' | 'succeeded' | 'failed'
+  deleteMarcheError: string | null
 }
 
 const initialState: ProjetsState = {
@@ -51,6 +54,7 @@ const initialState: ProjetsState = {
   editConventionSpecifiqueStatus: 'idle',
   editConventionSpecifiqueError: null,
   deleteConventionSpecifiqueStatus: 'idle',
+  deleteConventionSpecifiqueError: null,
 
   marches: [],
   marchesStatus: 'idle',
@@ -59,6 +63,7 @@ const initialState: ProjetsState = {
   editMarcheStatus: 'idle',
   editMarcheError: null,
   deleteMarcheStatus: 'idle',
+  deleteMarcheError: null,
 }
 
 export const loadProjets = createAsyncThunk(
@@ -81,7 +86,7 @@ export const createProjetThunk = createAsyncThunk(
   'projets/create',
   async (data: ProjetRequest, { rejectWithValue }) => {
     try { return await createProjet(data) }
-    catch (err) { return rejectWithValue('Impossible de créer le projet.') }
+    catch (err) { return rejectWithValue(getApiErrorMessage(err, 'Impossible de créer le projet.')) }
   }
 )
 
@@ -89,7 +94,7 @@ export const updateProjetThunk = createAsyncThunk(
   'projets/update',
   async ({ id, data }: { id: string; data: ProjetRequest }, { rejectWithValue }) => {
     try { return await updateProjet(id, data) }
-    catch (err) { return rejectWithValue('Impossible de modifier le projet.') }
+    catch (err) { return rejectWithValue(getApiErrorMessage(err, 'Impossible de modifier le projet.')) }
   }
 )
 
@@ -97,7 +102,7 @@ export const deleteProjetThunk = createAsyncThunk(
   'projets/delete',
   async (id: string, { rejectWithValue }) => {
     try { await deleteProjet(id); return id }
-    catch (err) { return rejectWithValue('Impossible de supprimer le projet.') }
+    catch (err) { return rejectWithValue(getApiErrorMessage(err, 'Impossible de supprimer le projet.')) }
   }
 )
 
@@ -110,10 +115,14 @@ export const fetchConventionsSpecifiques = createAsyncThunk(
 
 export const addConventionSpecifique = createAsyncThunk(
   'projets/addConventionSpecifique',
-  async (payload: ConventionSpecifiqueCreateRequest, { dispatch }) => {
-    await createConventionSpecifique(payload)
-    await dispatch(fetchConventionsSpecifiques(payload.idProjet))
-    await dispatch(loadProjetDetail(payload.idProjet))
+  async (payload: ConventionSpecifiqueCreateRequest, { dispatch, rejectWithValue }) => {
+    try {
+      await createConventionSpecifique(payload)
+      await dispatch(fetchConventionsSpecifiques(payload.idProjet))
+      await dispatch(loadProjetDetail(payload.idProjet))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de l'association du partenaire"))
+    }
   }
 )
 
@@ -121,19 +130,27 @@ export const editConventionSpecifique = createAsyncThunk(
   'projets/editConventionSpecifique',
   async (
     { id, idProjet, payload }: { id: string; idProjet: string; payload: ConventionSpecifiqueCreateRequest },
-    { dispatch }
+    { dispatch, rejectWithValue }
   ) => {
-    await updateConventionSpecifique(id, payload)
-    await dispatch(fetchConventionsSpecifiques(idProjet))
+    try {
+      await updateConventionSpecifique(id, payload)
+      await dispatch(fetchConventionsSpecifiques(idProjet))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, 'Erreur lors de la modification'))
+    }
   }
 )
 
 export const removeConventionSpecifique = createAsyncThunk(
   'projets/removeConventionSpecifique',
-  async ({ id, idProjet }: { id: string; idProjet: string }, { dispatch }) => {
-    await deleteConventionSpecifique(id)
-    await dispatch(fetchConventionsSpecifiques(idProjet))
-    await dispatch(loadProjetDetail(idProjet))
+  async ({ id, idProjet }: { id: string; idProjet: string }, { dispatch, rejectWithValue }) => {
+    try {
+      await deleteConventionSpecifique(id)
+      await dispatch(fetchConventionsSpecifiques(idProjet))
+      await dispatch(loadProjetDetail(idProjet))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, 'Erreur lors de la suppression'))
+    }
   }
 )
 
@@ -146,10 +163,14 @@ export const fetchMarches = createAsyncThunk(
 
 export const addMarche = createAsyncThunk(
   'projets/addMarche',
-  async (payload: MarcheCreateRequest, { dispatch }) => {
-    await createMarche(payload)
-    await dispatch(fetchMarches(payload.idProjet))
-    await dispatch(loadProjetDetail(payload.idProjet))
+  async (payload: MarcheCreateRequest, { dispatch, rejectWithValue }) => {
+    try {
+      await createMarche(payload)
+      await dispatch(fetchMarches(payload.idProjet))
+      await dispatch(loadProjetDetail(payload.idProjet))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, "Erreur lors de l'ajout du marché"))
+    }
   }
 )
 
@@ -157,20 +178,28 @@ export const editMarche = createAsyncThunk(
   'projets/editMarche',
   async (
     { id, idProjet, payload }: { id: string; idProjet: string; payload: MarcheCreateRequest },
-    { dispatch }
+    { dispatch, rejectWithValue }
   ) => {
-    await updateMarche(id, payload)
-    await dispatch(fetchMarches(idProjet))
-    await dispatch(loadProjetDetail(idProjet))
+    try {
+      await updateMarche(id, payload)
+      await dispatch(fetchMarches(idProjet))
+      await dispatch(loadProjetDetail(idProjet))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, 'Erreur lors de la modification'))
+    }
   }
 )
 
 export const removeMarche = createAsyncThunk(
   'projets/removeMarche',
-  async ({ id, idProjet }: { id: string; idProjet: string }, { dispatch }) => {
-    await deleteMarche(id)
-    await dispatch(fetchMarches(idProjet))
-    await dispatch(loadProjetDetail(idProjet))
+  async ({ id, idProjet }: { id: string; idProjet: string }, { dispatch, rejectWithValue }) => {
+    try {
+      await deleteMarche(id)
+      await dispatch(fetchMarches(idProjet))
+      await dispatch(loadProjetDetail(idProjet))
+    } catch (err) {
+      return rejectWithValue(getApiErrorMessage(err, 'Erreur lors de la suppression'))
+    }
   }
 )
 
@@ -178,6 +207,9 @@ const projetsSlice = createSlice({
   name: 'projets',
   initialState,
   reducers: {
+    clearProjetsError: (state) => {
+      state.error = null
+    },
     resetAddConventionSpecifiqueStatus: (state) => {
       state.addConventionSpecifiqueStatus = 'idle'
       state.addConventionSpecifiqueError = null
@@ -188,6 +220,7 @@ const projetsSlice = createSlice({
     },
     resetDeleteConventionSpecifiqueStatus: (state) => {
       state.deleteConventionSpecifiqueStatus = 'idle'
+      state.deleteConventionSpecifiqueError = null
     },
     resetAddMarcheStatus: (state) => {
       state.addMarcheStatus = 'idle'
@@ -199,6 +232,7 @@ const projetsSlice = createSlice({
     },
     resetDeleteMarcheStatus: (state) => {
       state.deleteMarcheStatus = 'idle'
+      state.deleteMarcheError = null
     },
   },
   extraReducers: (builder) => {
@@ -241,7 +275,8 @@ const projetsSlice = createSlice({
       })
       .addCase(addConventionSpecifique.rejected, (state, action) => {
         state.addConventionSpecifiqueStatus = 'failed'
-        state.addConventionSpecifiqueError = action.error.message ?? "Erreur lors de l'association du partenaire"
+        state.addConventionSpecifiqueError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de l'association du partenaire"
       })
       .addCase(editConventionSpecifique.pending, (state) => {
         state.editConventionSpecifiqueStatus = 'loading'
@@ -252,16 +287,20 @@ const projetsSlice = createSlice({
       })
       .addCase(editConventionSpecifique.rejected, (state, action) => {
         state.editConventionSpecifiqueStatus = 'failed'
-        state.editConventionSpecifiqueError = action.error.message ?? 'Erreur lors de la modification'
+        state.editConventionSpecifiqueError =
+          (action.payload as string) ?? action.error.message ?? 'Erreur lors de la modification'
       })
       .addCase(removeConventionSpecifique.pending, (state) => {
         state.deleteConventionSpecifiqueStatus = 'loading'
+        state.deleteConventionSpecifiqueError = null
       })
       .addCase(removeConventionSpecifique.fulfilled, (state) => {
         state.deleteConventionSpecifiqueStatus = 'succeeded'
       })
-      .addCase(removeConventionSpecifique.rejected, (state) => {
+      .addCase(removeConventionSpecifique.rejected, (state, action) => {
         state.deleteConventionSpecifiqueStatus = 'failed'
+        state.deleteConventionSpecifiqueError =
+          (action.payload as string) ?? action.error.message ?? 'Erreur lors de la suppression'
       })
 
       // Sociétés / marchés
@@ -284,7 +323,8 @@ const projetsSlice = createSlice({
       })
       .addCase(addMarche.rejected, (state, action) => {
         state.addMarcheStatus = 'failed'
-        state.addMarcheError = action.error.message ?? "Erreur lors de l'ajout du marché"
+        state.addMarcheError =
+          (action.payload as string) ?? action.error.message ?? "Erreur lors de l'ajout du marché"
       })
       .addCase(editMarche.pending, (state) => {
         state.editMarcheStatus = 'loading'
@@ -295,21 +335,26 @@ const projetsSlice = createSlice({
       })
       .addCase(editMarche.rejected, (state, action) => {
         state.editMarcheStatus = 'failed'
-        state.editMarcheError = action.error.message ?? 'Erreur lors de la modification'
+        state.editMarcheError =
+          (action.payload as string) ?? action.error.message ?? 'Erreur lors de la modification'
       })
       .addCase(removeMarche.pending, (state) => {
         state.deleteMarcheStatus = 'loading'
+        state.deleteMarcheError = null
       })
       .addCase(removeMarche.fulfilled, (state) => {
         state.deleteMarcheStatus = 'succeeded'
       })
-      .addCase(removeMarche.rejected, (state) => {
+      .addCase(removeMarche.rejected, (state, action) => {
         state.deleteMarcheStatus = 'failed'
+        state.deleteMarcheError =
+          (action.payload as string) ?? action.error.message ?? 'Erreur lors de la suppression'
       })
   },
 })
 
 export const {
+  clearProjetsError,
   resetAddConventionSpecifiqueStatus,
   resetEditConventionSpecifiqueStatus,
   resetDeleteConventionSpecifiqueStatus,
